@@ -34,5 +34,5 @@ class SectorController {
     return res.status(400).json("Post Error");
   }
 }
-
+/* TESTE */
 export default new SectorController()
