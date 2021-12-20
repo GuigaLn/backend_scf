@@ -4,6 +4,7 @@ import TotemCallsController from './controllers/tickets/TotemCallsController';
 import TicketWindowController from './controllers/tickets/TicketWindowController';
 import SectorController from './controllers/tickets/SectorController';
 
+import AuthenticateController from './controllers/scf/AuthenticateController';
 import UbsController from './controllers/scf/UbsController';
 import OccupationController from './controllers/scf/OccupationController';
 import CityController from './controllers/scf/CityController';
@@ -27,6 +28,9 @@ routes.get('/sector', SectorController.index);
 routes.post('/sector', SectorController.store);
 
 /* ROTAS - SISTEMA SCP */
+routes.post('/login', AuthenticateController.login);
+routes.post('/newlogin', AuthenticateController.store);
+
 routes.get('/ubs', UbsController.index);
 routes.post('/ubs', UbsController.store);
 routes.post('/ubs/delete', UbsController.delete);
