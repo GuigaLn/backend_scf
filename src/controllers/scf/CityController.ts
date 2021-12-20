@@ -6,7 +6,7 @@ class CityController {
   public async index (req: Request, res: Response): Promise<Response> {
     try {
 
-      const sql = "SELECT id, id as idCity, descricao as description FROM cidade";
+      const sql = "SELECT id, id as idCity, descricao as description FROM cidade ORDER BY descricao ASC";
       const { rows } = await poolScp.query(sql);
       const returning = rows;
 

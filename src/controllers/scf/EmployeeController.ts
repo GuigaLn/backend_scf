@@ -6,7 +6,7 @@ class EmployeeController {
   public async index (req: Request, res: Response): Promise<Response> {
     try {
 
-      const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, to_char(adimisao, 'YYYY-MM-DD') as admission, matricula as registration FROM funcionario";
+      const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, to_char(adimisao, 'YYYY-MM-DD') as admission, matricula as registration FROM funcionario ORDER BY nome ASC";
       const { rows } = await poolScp.query(sql);
       const returning = rows;
 
@@ -19,7 +19,7 @@ class EmployeeController {
   public async shortList (req: Request, res: Response): Promise<Response> {
     try {
 
-      const sql = "SELECT id, nome as name, id as idemployee FROM funcionario";
+      const sql = "SELECT id, nome as name, id as idemployee FROM funcionario ORDER BY nome ASC";
       const { rows } = await poolScp.query(sql);
       const returning = rows;
 
