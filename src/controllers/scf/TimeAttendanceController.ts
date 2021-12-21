@@ -12,17 +12,16 @@ class TimeAttendanceController {
       startDay = req.body.startDay;
       endDay = req.body.endDay;
     } else {
-      startDay = moment().startOf('month').format('DD/MM/Y');
-      endDay = moment().endOf('month').format('DD/MM/Y');
+      startDay = moment().startOf('month');
+      endDay = moment().endOf('month');
     }
     
     try {
       const sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 ORDER BY data asc";
      
       const { rows } = await poolScp.query(sql, [req.body.id, startDay, endDay]);
-      const returning = rows;
 
-      return res.send(returning);
+      return res.send(getDates(startDay, endDay, req.body.id, rows));
     } catch (error) {
       return res.status(400).send(error);
     }
@@ -83,15 +82,22 @@ class TimeAttendanceController {
   
   public async update (req: Request, res: Response): Promise<Response> {
     const timeAttedance: TimeAttendanceInterface = req.body;
-
-    if(timeAttedance.id !== undefined && timeAttedance.id && timeAttedance.note !== undefined && timeAttedance.note) {
+    if(timeAttedance.note !== undefined && timeAttedance.note) {
       try {
-
-        const sql = "UPDATE ponto set id_obs = $1 WHERE id = $2";
-        const returning = await poolScp.query(sql, [timeAttedance.note, timeAttedance.id]);
-  
-        return res.json(returning);
-      } catch (error) {
+        var sql;
+        if(timeAttedance.id !== undefined && timeAttedance.id) {
+          sql = "UPDATE ponto set id_obs = $1 WHERE id = $2";
+          return res.json(await poolScp.query(sql, [timeAttedance.note, timeAttedance.id]));
+        } else {
+          
+          if(timeAttedance.idEmployee !== undefined && timeAttedance.idEmployee && timeAttedance.date && timeAttedance.date !== undefined) {
+            sql = "INSERT INTO ponto(data, id_funcionario, id_obs) VALUES($1, $2, $3)";
+            return res.json(await poolScp.query(sql, [timeAttedance.date, timeAttedance.idEmployee, timeAttedance.note]));
+          }
+        }
+        
+        return res.status(400).json("Error");
+      } catch (error) {console.log(error)
         return res.status(400).json(error);
       }
     }
@@ -100,5 +106,46 @@ class TimeAttendanceController {
   }
 }
 
+
+
+function getDates(startDate, stopDate, idEmployee, arrayDb) {
+  var dateArray = [];
+  var currentDate = moment(startDate);
+  var endDate = moment(stopDate);
+  let finDate = -1;
+
+  while (currentDate <= endDate) {
+      finDate = arrayDb.findIndex((obj) => obj.day === moment(currentDate).format('DD-MM-YYYY'));
+
+      if(finDate !== -1) {
+        arrayDb[finDate].week = getWeek(moment(currentDate).weekday());
+        dateArray.push(arrayDb[finDate]);
+      } else {
+        dateArray.push(
+          {
+            day: moment(currentDate).format('DD-MM-YYYY'),
+            week: getWeek(moment(currentDate).weekday()),
+            one: '-',
+            oneout: '-',
+            two: '-',
+            twoout: '-',
+            id_funcionario: idEmployee,
+            obs: ''
+          });
+      }
+      currentDate = moment(currentDate).add(1, 'days');
+  }
+  return dateArray;
+}
+
+function getWeek(dayWeek: number) {
+  if(dayWeek === 0) return 'Dom';
+  if(dayWeek === 1) return 'Seg';
+  if(dayWeek === 2) return 'Ter';
+  if(dayWeek === 3) return 'Qua';
+  if(dayWeek === 4) return 'Qui';
+  if(dayWeek === 5) return 'Sex';
+  if(dayWeek === 6) return 'Sab';
+}
 
 export default new TimeAttendanceController();
