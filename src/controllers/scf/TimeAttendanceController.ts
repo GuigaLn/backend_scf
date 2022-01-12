@@ -17,19 +17,28 @@ class TimeAttendanceController {
     }
     
     try {
-      const sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 ORDER BY data asc";
+      var sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 ORDER BY data asc";
      
       const { rows } = await poolScp.query(sql, [req.body.id, startDay, endDay]);
 
-      return res.send(getDates(startDay, endDay, req.body.id, rows));
+      if(rows[0] === null || rows[0] === undefined) {
+ 
+        sql = "SELECT f.nome FROM funcionario f WHERE id = $1";
+        var returning = await poolScp.query(sql, [req.body.id]);
+
+        return res.send({customer: returning.rows[0].nome});
+      }
+
+      return res.send({times: getDates(startDay, endDay, req.body.id, rows), customer: rows[0].name});
     } catch (error) {
+
       return res.status(400).send(error);
     }
   }
 
   public async store (req: Request, res: Response): Promise<Response> {
     const timeAttedance: TimeAttendanceInterface = req.body;
-   // console.log(moment().format('HH:mm:ss'));
+   
     if(timeAttedance.registration !== undefined) {
       
       try {

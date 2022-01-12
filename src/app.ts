@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 
-import routes from './routes';
+import routes from './routes/index';
 import { poolTickets, poolScp } from './utils/dbconfig';
 import socket from 'socket.io';
 import http from 'http';

@@ -19,7 +19,7 @@ class EmployeeController {
   public async shortList (req: Request, res: Response): Promise<Response> {
     try {
 
-      const sql = "SELECT id, nome as name, id as idemployee FROM funcionario ORDER BY nome ASC";
+      const sql = "SELECT id, matricula as registration, nome as name, id as idemployee FROM funcionario WHERE ponto = true AND demisao IS NULL ORDER BY nome ASC";
       const { rows } = await poolScp.query(sql);
       const returning = rows;
 

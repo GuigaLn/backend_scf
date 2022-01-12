@@ -1,18 +1,21 @@
 import { Request, response, Response } from 'express'
 import { poolScp } from '../../utils/dbconfig';
 import { LoginInterface } from '../../interfaces/scf/Login';
+import authConfig from '../../config/auth';
 import { compare, hash } from 'bcryptjs';
+import { sign } from 'jsonwebtoken';
 
 class AuthenticateController {
   public async login (req: Request, res: Response) {
     const loginReq: LoginInterface = req.body;
+    let token;
 
     if(loginReq.login !== undefined && loginReq.login && loginReq.password, loginReq.password) {
       try {
         
         var sql = "SELECT id, login, senha FROM usuario_login WHERE login = $1";
 
-        const { rows } = await poolScp.query(sql, [loginReq.login]);
+        const { rows } = await poolScp.query(sql, [loginReq.login.toUpperCase()]);
         
         if(rows.length > 0) {
           //compara a senha
@@ -20,9 +23,19 @@ class AuthenticateController {
 
           if ( !passwordMatched ) {
             return res.status(401).json({status: "401", msg: "Login ou Senha Incorretas!" });
-          } 
+          }
+          
+          sql = 'SELECT usuario_permisao.permisao_id FROM usuario_permisao WHERE usuario_login_id = $1';
+          var userPermissions = await poolScp.query(sql, [rows[0].id]);
+          
+          token = sign({ id:  rows[0].id, login: rows[0].login, userPermissions: userPermissions.rows }, authConfig.jwt.secret, { 
+            expiresIn: authConfig.jwt.expiresIn
+          });
+
           rows[0].senha = null;
-          return res.json({user: rows[0]});
+          rows[0].userPermissions = userPermissions.rows;
+
+          return res.json({user: rows[0], token});
         }
 
         return res.status(401).json({status: "401", msg: "Login ou Senha Incorretas!" });
@@ -62,7 +75,6 @@ class AuthenticateController {
 
     return res.status(400).json({status: "400", msg: "Falta de Dados!" });
   }
-  
 }
 
 
