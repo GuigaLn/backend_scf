@@ -18,16 +18,6 @@
   Mobile (para efetuar as batidas de ponto e futuramente emitir as senhas) - ReactNative + TypeScript;
   Banco de Dados - PostgreSQL.
 
-In the project directory, you can run:
-
-## Learn More
-
-<p align="center">
-  <img align="center" src="https://img.shields.io/github/issues/GuigaLn/frontend_scf"/>
-  <img align="center" src="https://img.shields.io/github/forks/GuigaLn/frontend_scf"/>
-  <img align="center" src="https://img.shields.io/github/stars/GuigaLn/frontend_scf"/>
-</p>
-
 <h4 align="center"> 
 	 🚀 EM CONSTRUCÃO
 </h4>
