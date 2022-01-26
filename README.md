@@ -3,13 +3,14 @@
  Criado com Nodejs.
 
 ## OBJETIVO E FUNCIONALIDADES:
-  Desenvolver um sistema para a Prefeitura Municipal de Cruz Machado - Pr, com a finalidade de gerenciar as atividades dos funcionários do estabelecimento.
-  Se encontra em faze de desevolvimento. Entrentato já abrange funcionalidade como:
-    Gerar folha de requerimento de Férias ou Licença Prêmio, variando de acordo com o pedido;
-    Sistema de Controle Controle de Batidas (com possibilidade de lançamento de atestados ou folgas).
-  Funcionalidade futuras:
-    Sistema de impressão e controle de senhas de atendimento (com possibilidade de escolha de prioridade);
-    Painel de Chamados para as senhas.
+  <p>Desenvolver um sistema para a Prefeitura Municipal de Cruz Machado - Pr, com a finalidade de gerenciar as atividades dos funcionários do estabelecimento.</p>
+  <p>Se encontra em faze de desevolvimento. Entrentato já abrange funcionalidade como:</p>
+    <p>Gerar folha de requerimento de Férias ou Licença Prêmio, variando de acordo com o pedido;</p>
+    <p>Sistema de Controle Controle de Batidas (com possibilidade de lançamento de atestados ou folgas).</p>
+  <p>Funcionalidade futuras:</p>
+    <p>Sistema de impressão e controle de senhas de atendimento (com possibilidade de escolha de prioridade);</p>
+    <p>Painel de Chamados para as senhas.</p>
+    <p>Chat vínculado ao WhatsApp.</p>
 
 ## COMPOSIÇÃO:
   FrontEnd - ReactJs + TypeScript;
