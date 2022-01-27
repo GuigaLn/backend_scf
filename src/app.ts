@@ -19,6 +19,8 @@ class App {
     this.middlewares();
     this.database();
     this.routes();
+    this.sockets();
+    this.listen();
   }
 
   private middlewares (): void {
@@ -60,10 +62,11 @@ class App {
   private listen(): void {
     this.io.on('connection', (client) => {
       var sectorId = Number(client.handshake.headers.sectorid); 
-
+      
       if(clients[sectorId] === undefined) {
         clients[Number(sectorId)] = {client};
         console.log(`Client connected ${client.handshake.headers.sectorid }`);
+        client.emit('sucess', 'Client Connected!');
       } else {
         client.emit("error", "Client has Connected!")
         console.log(`Client Error`);
@@ -73,7 +76,6 @@ class App {
         if(clients[sectorId] !== undefined && clients[sectorId].client.id === client.id) {
           console.log(`${client.id} Disconnected`);
           clients.splice(sectorId, 1);
-          console.log(clients)
         } else {
           console.log(`Client Not Connected`);
         }
@@ -82,4 +84,4 @@ class App {
   }
 }
 
-export default new App().app
+export default new App().httpServer

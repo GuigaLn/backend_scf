@@ -4,8 +4,12 @@ export interface EmployeeInterface {
     birthday: Date
     cpf: string
     cns: string
-    admission: Date
-    resignation: Date
+    numberct: number
+    seriesct: number
     registration: number
+    mail: string
+    phone: string
+    ubsid: number
+    occupationid: number
 }
   

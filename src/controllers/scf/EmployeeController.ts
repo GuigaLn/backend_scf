@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { Request, response, Response } from 'express'
 import { poolScp } from '../../utils/dbconfig';
 import { EmployeeInterface } from '../../interfaces/scf/Employee';
 
@@ -6,7 +6,7 @@ class EmployeeController {
   public async index (req: Request, res: Response): Promise<Response> {
     try {
 
-      const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, to_char(adimisao, 'YYYY-MM-DD') as admission, matricula as registration FROM funcionario ORDER BY nome ASC";
+      const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, id_ubs as ubsid FROM funcionario ORDER BY nome ASC";
       const { rows } = await poolScp.query(sql);
       const returning = rows;
 
@@ -33,11 +33,28 @@ class EmployeeController {
     const employee: EmployeeInterface = req.body;
     if(employee.id !== undefined) {
       try {
-        const sql = "SELECT * FROM funcionario WHERE id = $1";
+        const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, email as mail, telefone as phone, id_ubs as ubsid, id_funcao as occupationid FROM funcionario WHERE id = $1";
         const { rows } = await poolScp.query(sql, [employee.id]);
         const returning = rows;
 
         return res.send(returning);
+      } catch (error) {
+        return res.status(400).send(error);
+      }
+    }
+
+    return res.status(400).json({status: "400", msg: "Falta o ID do Funcionário!" });
+  }
+
+  public async detailForEpi (req: Request, res: Response): Promise<Response> {
+    const employee: EmployeeInterface = req.body;
+    if(employee.id !== undefined) {
+      try {
+        const sql = "SELECT f.nome as name, f.cpf, f.cns, func.descricao as occupation FROM funcionario f INNER JOIN funcao func ON f.id_funcao = func.id WHERE f.id = $1 limit 1";
+        const { rows } = await poolScp.query(sql, [employee.id]);
+        const returning = rows;
+
+        return res.send(returning[0]);
       } catch (error) {
         return res.status(400).send(error);
       }
@@ -52,14 +69,12 @@ class EmployeeController {
     if(employee.name !== undefined && employee.birthday !== undefined && employee.cpf !== undefined) {
       try {
         if(employee.cns === undefined) { employee.cns = null }
-        if(employee.admission === undefined) { employee.admission = null }
-        if(employee.resignation === undefined) { employee.resignation = null }
         if(employee.registration === undefined) { employee.registration = null }
 
-        const sql = "INSERT INTO funcionario(nome, data_nascimento, cpf, cns, adimisao, demisao, matricula)" +
+        const sql = "INSERT INTO funcionario(nome, data_nascimento, cpf, cns, matricula)" +
         "VALUES($1, $2, $3, $4, $5, $6, $7) returning id";;
 
-        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.admission, employee.resignation, employee.registration]);
+        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration]);
   
         return res.json(returning);
       } catch (error) {
@@ -72,18 +87,21 @@ class EmployeeController {
   }
 
   public async update (req: Request, res: Response): Promise<Response> {
-    const employee: EmployeeInterface = req.body;
+    const employee: EmployeeInterface = req.body.data;
 
     if(employee.id !== undefined && employee.id !== null && employee.name !== undefined && employee.birthday !== undefined && employee.cpf !== undefined) {
       try {
         if(employee.cns === undefined) { employee.cns = null }
-        if(employee.admission === undefined) { employee.admission = null }
         if(employee.registration === undefined) { employee.registration = null }
+        if(employee.numberct === undefined) { employee.numberct = null}
+        if(employee.seriesct === undefined) { employee.seriesct = null }
+        if(employee.phone === undefined) { employee.phone = null }
+        if(employee.mail === undefined) { employee.mail = null }
 
-        const sql = "UPDATE funcionario set nome = $1, data_nascimento = $2, cpf = $3, cns = $4, adimisao = $5, matricula = $6 WHERE id = $7";
+        const sql = "UPDATE funcionario set nome = $1, data_nascimento = $2, cpf = $3, cns = $4, matricula = $5, numero_carteira = $6, serie_carteira = $7, telefone = $8, email = $9, id_ubs = $10, id_funcao = $11 WHERE id = $12";
+        
+        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration, employee.numberct, employee.seriesct, employee.phone, employee.mail, employee.ubsid, employee.occupationid, employee.id]);
 
-        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.admission, employee.registration, employee.id]);
-  
         return res.json(returning);
       } catch (error) {
         console.log(error)

@@ -12,6 +12,7 @@ employeeRouter.get('/', EmployeeController.index);
 employeeRouter.post('/', EmployeeController.store);
 employeeRouter.put('/', EmployeeController.update);
 employeeRouter.get('/shortlist', EmployeeController.shortList);
-employeeRouter.get('/detail', EmployeeController.detail);
+employeeRouter.post('/detail', EmployeeController.detail);
+employeeRouter.post('/detailforepi', EmployeeController.detailForEpi);
 
 export default employeeRouter;
