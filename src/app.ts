@@ -63,6 +63,7 @@ class App {
     this.io.on('connection', (client) => {
       var sectorId = Number(client.handshake.headers.sectorid); 
       
+      /* SE NÃO EXISTIR CLIENTE COM O MESMO SETOR ID, ENTÃO CRIA, SE NÃO DEVOLVE ERRO */
       if(clients[sectorId] === undefined) {
         clients[Number(sectorId)] = {client};
         console.log(`Client connected ${client.handshake.headers.sectorid }`);
@@ -73,9 +74,10 @@ class App {
       }
 
       client.on('disconnect', () => {
+        /* SE DESCONECTAR, VERIFICA SE O ID É O MESMO E REMOVE PELO INDEX */
         if(clients[sectorId] !== undefined && clients[sectorId].client.id === client.id) {
           console.log(`${client.id} Disconnected`);
-          clients.splice(sectorId, 1);
+          clients.splice(clients.indexOf(sectorId), 1);
         } else {
           console.log(`Client Not Connected`);
         }
