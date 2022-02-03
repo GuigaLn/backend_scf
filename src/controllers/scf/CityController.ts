@@ -17,6 +17,8 @@ class CityController {
   }
 
   public async store (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const city: CityInterface = req.body;
 
     if(city.description !== null && city.description !== undefined && city.description) {
@@ -35,6 +37,8 @@ class CityController {
   }
 
   public async update (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const city: CityInterface = req.body;
 
     if(city.description !== undefined && city.id !== undefined && city.id && city.description) {
@@ -53,6 +57,8 @@ class CityController {
   }
 
   public async delete (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const city: CityInterface = req.body;
 
     if(city.id && city.id !== undefined) {

@@ -1,7 +1,8 @@
-import { request, Request, response, Response } from 'express'
+import { Request, response, Response } from 'express'
 import { poolScp } from '../../utils/dbconfig';
 import { TimeAttendanceInterface } from '../../interfaces/scf/TimeAttendance';
 import moment from 'moment';
+
 
 class TimeAttendanceController {
   public async index (req: Request, res: Response): Promise<Response> {
@@ -17,9 +18,9 @@ class TimeAttendanceController {
     }
     
     try {
-      var sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 ORDER BY data asc";
+      var sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 AND f.id_ubs = $4 ORDER BY data asc";
      
-      const { rows } = await poolScp.query(sql, [req.body.id, startDay, endDay]);
+      const { rows } = await poolScp.query(sql, [req.body.id, startDay, endDay, req.idUbs]);
 
       if(rows[0] === null || rows[0] === undefined) {
  

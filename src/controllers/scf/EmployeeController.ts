@@ -6,8 +6,8 @@ class EmployeeController {
   public async index (req: Request, res: Response): Promise<Response> {
     try {
 
-      const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, id_ubs as ubsid FROM funcionario ORDER BY nome ASC";
-      const { rows } = await poolScp.query(sql);
+      const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, id_ubs as ubsid FROM funcionario WHERE id_ubs = $1  ORDER BY nome ASC";
+      const { rows } = await poolScp.query(sql, [ req.idUbs ]);
       const returning = rows;
 
       return res.send(returning);
@@ -19,8 +19,8 @@ class EmployeeController {
   public async shortList (req: Request, res: Response): Promise<Response> {
     try {
 
-      const sql = "SELECT id, matricula as registration, nome as name, id as idemployee FROM funcionario WHERE ponto = true AND demisao IS NULL ORDER BY nome ASC";
-      const { rows } = await poolScp.query(sql);
+      const sql = "SELECT id, matricula as registration, nome as name, id as idemployee FROM funcionario WHERE ponto = true AND id_ubs = $1 AND demisao IS NULL ORDER BY nome ASC";
+      const { rows } = await poolScp.query(sql, [ req.idUbs ]);
       const returning = rows;
 
       return res.send(returning);
@@ -33,8 +33,8 @@ class EmployeeController {
     const employee: EmployeeInterface = req.body;
     if(employee.id !== undefined) {
       try {
-        const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, email as mail, telefone as phone, id_ubs as ubsid, id_funcao as occupationid FROM funcionario WHERE id = $1";
-        const { rows } = await poolScp.query(sql, [employee.id]);
+        const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, email as mail, telefone as phone, id_ubs as ubsid, id_funcao as occupationid FROM funcionario WHERE id = $1 AND id_ubs = $2";
+        const { rows } = await poolScp.query(sql, [ employee.id, req.idUbs ]);
         const returning = rows;
 
         return res.send(returning);
@@ -50,8 +50,8 @@ class EmployeeController {
     const employee: EmployeeInterface = req.body;
     if(employee.id !== undefined) {
       try {
-        const sql = "SELECT f.nome as name, f.cpf, f.cns, func.descricao as occupation FROM funcionario f INNER JOIN funcao func ON f.id_funcao = func.id WHERE f.id = $1 limit 1";
-        const { rows } = await poolScp.query(sql, [employee.id]);
+        const sql = "SELECT f.nome as name, f.cpf, f.cns, func.descricao as occupation FROM funcionario f INNER JOIN funcao func ON f.id_funcao = func.id WHERE f.id = $1 AND f.id_ubs = $2 limit 1";
+        const { rows } = await poolScp.query(sql, [ employee.id, req.idUbs ]);
         const returning = rows;
 
         return res.send(returning[0]);
@@ -71,10 +71,10 @@ class EmployeeController {
         if(employee.cns === undefined) { employee.cns = null }
         if(employee.registration === undefined) { employee.registration = null }
 
-        const sql = "INSERT INTO funcionario(nome, data_nascimento, cpf, cns, matricula)" +
-        "VALUES($1, $2, $3, $4, $5) returning id";;
+        const sql = "INSERT INTO funcionario(nome, data_nascimento, cpf, cns, matricula, id_ubs)" +
+        "VALUES($1, $2, $3, $4, $5, $6) returning id";;
 
-        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration]);
+        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration, req.idUbs]);
   
         return res.json(returning);
       } catch (error) {

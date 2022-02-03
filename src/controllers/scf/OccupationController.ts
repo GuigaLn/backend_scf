@@ -17,6 +17,8 @@ class OccupationController {
   }
 
   public async store (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const occupation: OccupationInterface = req.body;
 
     if(occupation.description && occupation.description !== undefined) {
@@ -35,6 +37,8 @@ class OccupationController {
   }
 
   public async update (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const occupation: OccupationInterface = req.body;
 
     if(occupation.description && occupation.description !== undefined) {
@@ -53,6 +57,8 @@ class OccupationController {
   }
   
   public async delete (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const occupation: OccupationInterface = req.body;
 
     if(occupation.id || occupation.id !== undefined) {

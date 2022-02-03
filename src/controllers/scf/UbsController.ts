@@ -17,6 +17,8 @@ class UbsController {
   }
 
   public async store (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const ubs: UsbInterface = req.body;
 
     if(ubs.description && ubs.description !== undefined) {
@@ -35,6 +37,8 @@ class UbsController {
   }
 
   public async update (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const ubs: UsbInterface = req.body;
 
     if(ubs.description && ubs.description !== undefined && ubs.id && ubs.id !== undefined) {
@@ -53,6 +57,8 @@ class UbsController {
   }
 
   public async delete (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const ubs: UsbInterface = req.body;
 
     if(ubs.id || ubs.id !== undefined) {

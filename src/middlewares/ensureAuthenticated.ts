@@ -5,6 +5,7 @@ import authConfig from '../config/auth';
 
 interface TokenPayLoad {
   id: number;
+  idUbs: number;
   iat: number;
   exp: number;
 }
@@ -24,9 +25,10 @@ export default function ensureAuthenticated(req, res, next: NextFunction): void 
   try {
     const decoded = verify(token, authConfig.jwt.secret);
 
-    const { id } = decoded as TokenPayLoad;
+    const { id, idUbs } = decoded as TokenPayLoad;
 
     req.user = id;
+    req.idUbs = idUbs;
 
     return next();
   } catch (error) {

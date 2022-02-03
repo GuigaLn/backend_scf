@@ -1,14 +1,16 @@
-import { Request, Response } from 'express'
+import { Request, RequestHandler, Response } from 'express'
 import { poolScp } from '../../utils/dbconfig';
 import { VacationInterface } from '../../interfaces/scf/Vacation';
 import moment from 'moment';
 
 class VacationController {
+  // LISTA TODOS
   public async index (req: Request, res: Response): Promise<Response> {
     try {
+      console.log(req.idUbs)
       let startDay = moment().format("DD-MM-Y");
-      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, CASE WHEN f.data_inicial <= $1 THEN 'true' ELSE 'false' END AS started, to_char(f.data_inicial , 'DD/MM/YYYY') as dateInitial, to_char(f.data_final , 'DD/MM/YYYY') as dateEnd, fu.nome as name, funcao.descricao as occupation FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id where f.data_final >= $2 ORDER BY f.data_inicial";
-      const { rows } = await poolScp.query(sql, [startDay, startDay]);
+      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, CASE WHEN f.data_inicial <= $1 THEN 'true' ELSE 'false' END AS started, to_char(f.data_inicial , 'DD/MM/YYYY') as dateInitial, to_char(f.data_final , 'DD/MM/YYYY') as dateEnd, fu.nome as name, funcao.descricao as occupation FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id where f.data_final >= $2 AND fu.id_ubs = $3 ORDER BY f.data_inicial";
+      const { rows } = await poolScp.query(sql, [startDay, startDay, req.idUbs]);
       const returning = rows;
 
       return res.send(returning);
@@ -17,15 +19,16 @@ class VacationController {
     }
   }
 
+  // LISTA FERIAS E LICENÇAS DE UM USUARIO
   public async listByEmployee (req: Request, res: Response): Promise<Response> {
     try {
       const vacation: VacationInterface = req.body;
 
       if(!vacation.idEmployee || vacation.idEmployee === undefined) { return res.status(400).json('ID Not Defined!'); }
 
-      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, to_char(f.data_inicial , 'DD/MM/YYYY') as dateInitial, to_char(f.data_final , 'DD/MM/YYYY') as dateEnd, fu.nome as name, funcao.descricao as occupation FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id WHERE fu.id = $1";
+      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, to_char(f.data_inicial , 'DD/MM/YYYY') as dateInitial, to_char(f.data_final , 'DD/MM/YYYY') as dateEnd, fu.nome as name, funcao.descricao as occupation, f.autorizado_por as autorizedby FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id WHERE fu.id = $1 AND fu.id_ubs = $2";
 
-      const { rows } = await poolScp.query(sql, [vacation.idEmployee]);
+      const { rows } = await poolScp.query(sql, [vacation.idEmployee, req.idUbs]);
       const returning = rows;
 
       return res.send(returning);
@@ -34,15 +37,16 @@ class VacationController {
     }
   }
 
+  // PARA IMPRIMIR
   public async detail (req: Request, res: Response): Promise<Response> {
     try {
       const vacation: VacationInterface = req.body;
 
       if(!vacation.id || vacation.id === undefined) { return res.status(400).json('ID Not Defined!'); }
 
-      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, to_char(f.data_inicial , 'DD-MM-YYYY') as dateInitial, to_char(f.data_final , 'DD-MM-YYYY') as dateEnd, f.gerado as created_at, fu.nome as name, fu.numero_carteira as numberct, fu.serie_carteira as seriesct, funcao.descricao as occupation FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id WHERE f.id = $1 limit 1";
+      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, to_char(f.data_inicial , 'DD-MM-YYYY') as dateInitial, to_char(f.data_final , 'DD-MM-YYYY') as dateEnd, f.gerado as created_at, fu.nome as name, fu.numero_carteira as numberct, fu.serie_carteira as seriesct, funcao.descricao as occupation FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id WHERE f.autorizado_por is not null AND f.id = $1 AND fu.id_ubs = $2 limit 1";
 
-      const { rows } = await poolScp.query(sql, [vacation.id]);
+      const { rows } = await poolScp.query(sql, [ vacation.id, req.idUbs ]);
       // Cruz Machado, 12 de janeiro de 2022.
       let month = getMonth(moment(rows[0].created_at).month());
       let day = moment(rows[0].created_at).format('D');

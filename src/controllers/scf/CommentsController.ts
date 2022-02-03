@@ -17,6 +17,8 @@ class CommentsController {
   }
 
   public async store (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const comments: CommentsInterface = req.body;
 
     if(comments.description && comments.description !== undefined) {
@@ -35,6 +37,8 @@ class CommentsController {
   }
 
   public async update (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const comments: CommentsInterface = req.body;
 
     if(comments.description && comments.description !== undefined) {
@@ -53,6 +57,8 @@ class CommentsController {
   }
   
   public async delete (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+
     const comments: CommentsInterface = req.body;
 
     if(comments.id || comments.id !== undefined) {

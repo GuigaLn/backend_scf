@@ -5,7 +5,6 @@ import { AddressInterface } from '../../interfaces/scf/Address';
 class AddressController {
   public async index (req: Request, res: Response): Promise<Response> {
     try {
-
       const sql = "SELECT * FROM endereco";
       const { rows } = await poolScp.query(sql);
       const returning = rows;
@@ -34,6 +33,8 @@ class AddressController {
   }
 
   public async store (req: Request, res: Response): Promise<Response> {
+    if(req.idUbs !== 9) { return res.status(401).send('Access for administrators only') };
+    
     const address: AddressInterface = req.body;
 
     if(address.idEmployee !== undefined && address.district && address.street, address.idCity) {

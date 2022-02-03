@@ -6,7 +6,7 @@ import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const vacationRouter = Router();
 
-//vacationRouter.use(ensureAuthenticated);
+vacationRouter.use(ensureAuthenticated);
 
 vacationRouter.get('/', VacationController.index);
 vacationRouter.post('/listByEmployee', VacationController.listByEmployee);

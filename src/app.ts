@@ -9,6 +9,7 @@ import http from 'http';
 export const clients : Array<any>  = new Array();
 
 class App {
+  
   public app: express.Application;
   public httpServer: http.Server;
   private io: socket.Server;
