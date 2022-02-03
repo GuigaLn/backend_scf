@@ -72,7 +72,7 @@ class EmployeeController {
         if(employee.registration === undefined) { employee.registration = null }
 
         const sql = "INSERT INTO funcionario(nome, data_nascimento, cpf, cns, matricula)" +
-        "VALUES($1, $2, $3, $4, $5, $6, $7) returning id";;
+        "VALUES($1, $2, $3, $4, $5) returning id";;
 
         const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration]);
   

@@ -122,13 +122,38 @@ function getDates(startDate, stopDate, idEmployee, arrayDb) {
   var currentDate = moment(startDate);
   var endDate = moment(stopDate);
   let finDate = -1;
+  let sumHours = 0;
 
   while (currentDate <= endDate) {
       finDate = arrayDb.findIndex((obj) => obj.day === moment(currentDate).format('DD-MM-YYYY'));
 
       if(finDate !== -1) {
+        let seconds = 0;
+
+        if(arrayDb[finDate].one && arrayDb[finDate].oneout) {
+          /* PEGA A DIFERENÇA ENTRE OS HORARIOS EM SEGUNDOS */
+          let diff = moment(arrayDb[finDate].oneout, "HH:mm:ss").diff(moment(arrayDb[finDate].one, "HH:mm:ss"));
+
+          seconds = moment.duration(diff).asSeconds();
+
+          sumHours = sumHours + seconds;
+
+          if(arrayDb[finDate].two && arrayDb[finDate].twoout) {
+            diff = moment(arrayDb[finDate].twoout, "HH:mm:ss").diff(moment(arrayDb[finDate].two, "HH:mm:ss"));
+            seconds = seconds + moment.duration(diff).asSeconds();
+
+            sumHours = sumHours + moment.duration(diff).asSeconds(); 
+          }  
+
+          if(arrayDb[finDate].two && !arrayDb[finDate].twoout) {
+            seconds = 0;
+          }
+        }
+        
+        arrayDb[finDate].sum = seconds == 0 ? 'BATIDA INCORRETA' : hhmmss(seconds);
         arrayDb[finDate].week = getWeek(moment(currentDate).weekday());
         dateArray.push(arrayDb[finDate]);
+
       } else {
         dateArray.push(
           {
@@ -138,13 +163,15 @@ function getDates(startDate, stopDate, idEmployee, arrayDb) {
             oneout: '-',
             two: '-',
             twoout: '-',
+            sum: '-',
             id_funcionario: idEmployee,
             obs: ''
           });
       }
       currentDate = moment(currentDate).add(1, 'days');
   }
-  return dateArray;
+  
+  return {list: dateArray, sumHours: hhmmss(sumHours)};
 }
 
 function getWeek(dayWeek: number) {
@@ -155,6 +182,21 @@ function getWeek(dayWeek: number) {
   if(dayWeek === 4) return 'Qui';
   if(dayWeek === 5) return 'Sex';
   if(dayWeek === 6) return 'Sab';
+}
+
+function hhmmss(secs) {
+  var minutes = Math.floor(secs / 60);
+  secs = secs%60;
+  var hours = Math.floor(minutes/60)
+  minutes = minutes%60;
+  return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
+}
+
+function pad(num) {
+    if(num > 100) {
+      return num;
+    }
+    return ("0"+num).slice(-2);
 }
 
 export default new TimeAttendanceController();

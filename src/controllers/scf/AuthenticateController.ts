@@ -13,7 +13,7 @@ class AuthenticateController {
     if(loginReq.login !== undefined && loginReq.login && loginReq.password, loginReq.password) {
       try {
         
-        var sql = "SELECT id, login, senha FROM usuario_login WHERE login = $1";
+        var sql = "SELECT id, login, senha, id_setor FROM usuario_login WHERE login = $1";
 
         const { rows } = await poolScp.query(sql, [loginReq.login.toUpperCase()]);
         
@@ -28,7 +28,7 @@ class AuthenticateController {
           sql = 'SELECT usuario_permisao.permisao_id FROM usuario_permisao WHERE usuario_login_id = $1';
           var userPermissions = await poolScp.query(sql, [rows[0].id]);
           
-          token = sign({ id:  rows[0].id, login: rows[0].login, userPermissions: userPermissions.rows }, authConfig.jwt.secret, { 
+          token = sign({ id:  rows[0].id, login: rows[0].login, userPermissions: userPermissions.rows, idSector: rows[0].id_setor }, authConfig.jwt.secret, { 
             expiresIn: authConfig.jwt.expiresIn
           });
 
