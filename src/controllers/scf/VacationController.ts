@@ -93,7 +93,7 @@ class VacationController {
     try {
       const dataEnd = moment(vacation.dateInitial, 'YYYY-MM-DD').add(vacation.daysPeriod - 1, 'days');
 
-      const sql = 'INSERT INTO ferias(ferias, quitacao, periodo_aquisitivo, quantidade_dias, id_funcionario, id_funcao, usuario_sistema, data_inicial, data_final)'
+      const sql = 'INSERT INTO ferias(ferias, quitacao, periodo_aquisitivo, quantidade_dias, id_funcionario, id_funcao, gerado_por, data_inicial, data_final)'
       + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id';
       const returning = await poolScp.query(sql, [vacation.vacation, vacation.discharge, vacation.vestingPeriod, vacation.daysPeriod, vacation.idEmployee, vacation.idOccupation, req.user, vacation.dateInitial, dataEnd]);
 
