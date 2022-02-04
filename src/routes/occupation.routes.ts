@@ -8,7 +8,6 @@ const occupationRouter = Router();
 
 occupationRouter.use(ensureAuthenticated);
 
-
 occupationRouter.get('/', OccupationController.index);
 occupationRouter.post('/', OccupationController.store);
 occupationRouter.post('/delete', OccupationController.delete);

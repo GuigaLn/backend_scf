@@ -1,4 +1,4 @@
-import { Timestamp } from "bson";
+import { Timestamp } from 'bson';
 
 export interface TimeAttendanceInterface {
     id: number
@@ -9,9 +9,8 @@ export interface TimeAttendanceInterface {
     secondExit: string
     thirdEntry: string
     thirdExit: string
-    idEmployee: number  
+    idEmployee: number
     registration: number
     note: number
     score: Timestamp
 }
-  

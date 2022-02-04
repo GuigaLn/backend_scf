@@ -13,5 +13,6 @@ vacationRouter.post('/listByEmployee', VacationController.listByEmployee);
 vacationRouter.post('/detail', VacationController.detail);
 vacationRouter.post('/', VacationController.store);
 vacationRouter.post('/delete', VacationController.delete);
+vacationRouter.put('/confirm', VacationController.confirm);
 
 export default vacationRouter;

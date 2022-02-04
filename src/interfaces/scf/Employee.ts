@@ -3,13 +3,12 @@ export interface EmployeeInterface {
     name: string
     birthday: Date
     cpf: string
-    cns: string
-    numberct: number
-    seriesct: number
-    registration: number
-    mail: string
-    phone: string
+    cns: string|null
+    numberct: number|null
+    seriesct: number|null
+    registration: number|null
+    mail: string|null
+    phone: string|null
     ubsid: number
     occupationid: number
 }
-  

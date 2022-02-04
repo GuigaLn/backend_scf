@@ -7,4 +7,3 @@ export interface AddressInterface {
     idCity: number
     idEmployee: number
 }
-  

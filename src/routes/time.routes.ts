@@ -7,7 +7,7 @@ import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 const timeRouter = Router();
 
 timeRouter.post('/', TimeAttendanceController.store);
-timeRouter.put('/', TimeAttendanceController.update);
+timeRouter.put('/', ensureAuthenticated, TimeAttendanceController.update);
 
 timeRouter.post('/detail', ensureAuthenticated, TimeAttendanceController.index);
 

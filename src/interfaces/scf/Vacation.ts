@@ -6,9 +6,8 @@ export interface VacationInterface {
     daysPeriod: number
     dateInitial: Date
     dateEnd: Date
-    idEmployee: number 
+    idEmployee: number
     idOccupation: number
-    idSystemUser: number 
+    idSystemUser: number
     createdAt: Date
 }
-  

@@ -4,4 +4,3 @@ export interface LoginInterface {
     password: string
     idEmployee: number
 }
-  

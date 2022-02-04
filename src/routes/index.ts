@@ -14,7 +14,6 @@ import timeRouter from './time.routes';
 import ubsRouter from './ubs.routes';
 import vacationRouter from './vacation.routes';
 
-
 const routes = Router();
 
 /* ROTAS - SISTEMA DE SENHAS */
