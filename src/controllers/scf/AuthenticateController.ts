@@ -73,9 +73,9 @@ class AuthenticateController {
 
         const hashedPassowrd = await hash(loginReq.password, 8);
 
-        sql = 'INSERT INTO usuario_login(login, senha, id_funcionario) VALUES ($1, $2, $3)';
+        sql = 'INSERT INTO usuario_login(login, senha, id_funcionario, id_setor, id_unidade_de_saude) VALUES ($1, $2, $3, $4, $5)';
 
-        const returning = await poolScp.query(sql, [loginReq.login, hashedPassowrd, loginReq.idEmployee]);
+        const returning = await poolScp.query(sql, [loginReq.login, hashedPassowrd, loginReq.idEmployee, 1, 9]);
 
         return res.json(returning);
       } catch (error) {

@@ -130,7 +130,7 @@ class VacationController {
     // APENAS - SMS
     if (req.idUbs !== 9) { return res.status(401).send('Access for administrators only'); }
 
-    if (!checkPermision(1, req.userPermissions)) {
+    if (!checkPermision(5, req.userPermissions)) {
       return res.status(403).json({ status: ' Not Permision ' });
     }
 
