@@ -14,5 +14,6 @@ vacationRouter.post('/detail', VacationController.detail);
 vacationRouter.post('/', VacationController.store);
 vacationRouter.post('/delete', VacationController.delete);
 vacationRouter.put('/confirm', VacationController.confirm);
+vacationRouter.put('/cancel', VacationController.cancel);
 
 export default vacationRouter;
