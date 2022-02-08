@@ -2,6 +2,7 @@ export interface VacationInterface {
     id: string
     vacation: boolean
     discharge: boolean
+    enjoyment: boolean
     vestingPeriod: string
     daysPeriod: number
     dateInitial: Date

@@ -13,7 +13,7 @@ class VacationController {
 
     try {
       const startDay = moment().format('DD-MM-Y');
-      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, CASE WHEN f.data_inicial <= $1 THEN 'true' ELSE 'false' END AS started, to_char(f.data_inicial , 'DD/MM/YYYY') as dateInitial, to_char(f.data_final , 'DD/MM/YYYY') as dateEnd, fu.nome as name, funcao.descricao as occupation, f.autorizado_por as autorizedby FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id where f.data_final >= $2 AND (fu.id_ubs = $3 OR 9 = $4) ORDER BY f.data_inicial";
+      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, CASE WHEN f.data_inicial <= $1 THEN 'true' ELSE 'false' END AS started, to_char(f.data_inicial , 'DD/MM/YYYY') as dateInitial, to_char(f.data_final , 'DD/MM/YYYY') as dateEnd, fu.nome as name, funcao.descricao as occupation, f.autorizado_por as autorizedby FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id where f.data_final >= $2 AND (fu.id_ubs = $3 OR 9 = $4) ORDER BY f.autorizado_por is null ASC, f.data_inicial, f.data_final ASC";
       const { rows } = await poolScp.query(sql, [startDay, startDay, req.idUbs, req.idUbs]);
       const returning = rows;
 
@@ -56,7 +56,7 @@ class VacationController {
 
       if (!vacation.id || vacation.id === undefined) { return res.status(400).json('ID Not Defined!'); }
 
-      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, to_char(f.data_inicial , 'DD-MM-YYYY') as dateInitial, to_char(f.data_final , 'DD-MM-YYYY') as dateEnd, f.gerado as created_at, fu.nome as name, fu.numero_carteira as numberct, fu.serie_carteira as seriesct, funcao.descricao as occupation FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id WHERE f.autorizado_por is not null AND f.id = $1 AND (fu.id_ubs = $2 OR 9 = $3) limit 1";
+      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.gozo as enjoyment, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, to_char(f.data_inicial , 'DD-MM-YYYY') as dateInitial, to_char(f.data_final , 'DD-MM-YYYY') as dateEnd, f.gerado as created_at, fu.nome as name, fu.numero_carteira as numberct, fu.serie_carteira as seriesct, funcao.descricao as occupation FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id WHERE f.autorizado_por is not null AND f.id = $1 AND (fu.id_ubs = $2 OR 9 = $3) limit 1";
 
       const { rows } = await poolScp.query(sql, [vacation.id, req.idUbs, req.idUbs]);
       // Cruz Machado, 12 de janeiro de 2022.
@@ -81,21 +81,33 @@ class VacationController {
     }
 
     const vacation: VacationInterface = req.body;
+    let dataEnd;
 
     if (vacation.vacation === undefined) { return res.status(400).json('Type Not Defined!'); }
     if (vacation.discharge === undefined) { return res.status(400).json('Discharge Not Defined!'); }
     if (!vacation.vestingPeriod || vacation.vestingPeriod === undefined) { return res.status(400).json('Vesting Period Not Defined!'); }
-    if (!vacation.daysPeriod || vacation.daysPeriod === undefined) { return res.status(400).json('Days Period Not Defined!'); }
+    if (vacation.daysPeriod === null || vacation.daysPeriod === undefined) { return res.status(400).json('Days Period Not Defined!'); }
     if (!vacation.dateInitial || vacation.dateInitial === undefined) { return res.status(400).json('Date Initial Not Defined!'); }
     if (!vacation.idEmployee || vacation.idEmployee === undefined) { return res.status(400).json('ID Employee Not Defined!'); }
     if (!vacation.idOccupation || vacation.idOccupation === undefined) { return res.status(400).json('ID Occupation Not Defined!'); }
 
-    try {
-      const dataEnd = moment(vacation.dateInitial, 'YYYY-MM-DD').add(vacation.daysPeriod - 1, 'days');
+    if (vacation.enjoyment === undefined) { vacation.enjoyment = true; }
 
-      const sql = 'INSERT INTO ferias(ferias, quitacao, periodo_aquisitivo, quantidade_dias, id_funcionario, id_funcao, gerado_por, data_inicial, data_final)'
-      + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id';
-      const returning = await poolScp.query(sql, [vacation.vacation, vacation.discharge, vacation.vestingPeriod, vacation.daysPeriod, vacation.idEmployee, vacation.idOccupation, req.user, vacation.dateInitial, dataEnd]);
+    // LICENÇA PRÊMIO SEMPRE TERÁ GOZO E NÃO TERA QUITAÇÃO
+    if (vacation.vacation === false) { vacation.enjoyment = true; vacation.discharge = false; }
+
+    try {
+      // CASO NÃO POSSUA GOZO, NÃO VAI TER DATA FINAL DEFINIDA
+      if (vacation.enjoyment === false) {
+        dataEnd = vacation.dateInitial;
+        vacation.daysPeriod = 0;
+      } else {
+        dataEnd = moment(vacation.dateInitial, 'YYYY-MM-DD').add(vacation.daysPeriod - 1, 'days');
+      }
+
+      const sql = 'INSERT INTO ferias(ferias, quitacao, gozo, periodo_aquisitivo, quantidade_dias, id_funcionario, id_funcao, gerado_por, data_inicial, data_final)'
+      + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning id';
+      const returning = await poolScp.query(sql, [vacation.vacation, vacation.discharge, vacation.enjoyment, vacation.vestingPeriod, vacation.daysPeriod, vacation.idEmployee, vacation.idOccupation, req.user, vacation.dateInitial, dataEnd]);
 
       return res.json(returning);
     } catch (error) {
@@ -170,18 +182,26 @@ function getMonth(month: number) {
 /* FUNÇÃO OBTER TEXTO */
 function getText(data: any) {
   var preText;
-  if (data.vacation === true) {
-    preText = `Eu ${data.name} Número: ${data.numberct} Série: ${data.seriesct}, `
-    + `servidor Público desta Municipalidade, exercendo a função de ${data.occupation}, `
-    + 'em conformidade com a Lei Complementar nº 001/2006, Capítulo IV. Art 94, venho mui '
-    + `respeitosamente requerer ${data.discharge ? 'gozo e quitação' : 'gozo'} das Férias referente ao período aquisitivo ${data.vestingperiod} no `
-    + `período de ${data.daysperiod} dias a contar do dia ${data.dateinitial.replaceAll('-', '/')} ao ${data.dateend.replaceAll('-', '/')}.`;
+  // VERIFICA SE REQUER GOZO DE FÉRIAS
+  if (data.enjoyment === true) {
+    if (data.vacation === true) {
+      preText = `Eu ${data.name} Número: ${data.numberct} Série: ${data.seriesct}, `
+      + `servidor Público desta Municipalidade, exercendo a função de ${data.occupation}, `
+      + 'em conformidade com a Lei Complementar nº 001/2006, Capítulo IV. Art 94, venho mui '
+      + `respeitosamente requerer ${data.discharge ? 'gozo e quitação' : 'gozo'} das Férias referente ao período aquisitivo ${data.vestingperiod} no `
+      + `período de ${data.daysperiod} dias a contar do dia ${data.dateinitial.replaceAll('-', '/')} ao ${data.dateend.replaceAll('-', '/')}.`;
+    } else {
+      preText = `Eu ${data.name} Número: ${data.numberct} Série: ${data.seriesct}, `
+      + `servidor Público desta Municipalidade, exercendo a função de ${data.occupation}, `
+      + 'em conformidade com a Lei Complementar nº 001/2006, Capítulo IV. Art 94, venho mui '
+      + `respeitosamente requerer Licença Especial a Título Prêmio referente ao período aquisitivo ${data.vestingperiod} no `
+      + `período de ${data.daysperiod} dias a contar do dia ${data.dateinitial.replaceAll('-', '/')} ao  ${data.dateend.replaceAll('-', '/')}.`;
+    }
   } else {
     preText = `Eu ${data.name} Número: ${data.numberct} Série: ${data.seriesct}, `
     + `servidor Público desta Municipalidade, exercendo a função de ${data.occupation}, `
     + 'em conformidade com a Lei Complementar nº 001/2006, Capítulo IV. Art 94, venho mui '
-    + `respeitosamente requerer Licença Especial a Título Prêmio referente ao período aquisitivo ${data.vestingperiod} no `
-    + `período de ${data.daysperiod} dias a contar do dia ${data.dateinitial.replaceAll('-', '/')} ao  ${data.dateend.replaceAll('-', '/')}.`;
+    + `respeitosamente requerer quitação das Férias referente ao período aquisitivo ${data.vestingperiod}`;
   }
 
   return preText;
