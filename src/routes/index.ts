@@ -13,15 +13,16 @@ import occupationRouter from './occupation.routes';
 import timeRouter from './time.routes';
 import ubsRouter from './ubs.routes';
 import vacationRouter from './vacation.routes';
+import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const routes = Router();
 
 /* ROTAS - SISTEMA DE SENHAS */
 routes.post('/totemCalls', TotemCallsController.store);
 
-routes.post('/TicketWindowController', TicketWindowController.store);
-routes.post('/loadingInitialWindow', TicketWindowController.loadingInitial);
-routes.post('/resetTickets', TicketWindowController.resetTickets);
+routes.post('/TicketWindowController', ensureAuthenticated, TicketWindowController.store);
+routes.post('/loadingInitialWindow', ensureAuthenticated, TicketWindowController.loadingInitial);
+routes.post('/resetTickets', ensureAuthenticated, TicketWindowController.resetTickets);
 
 routes.get('/sector', SectorController.index);
 routes.post('/sector', SectorController.store);

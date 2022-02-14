@@ -3,58 +3,57 @@ import { poolTickets } from '../../utils/dbconfig';
 import { TicketInterface } from '../../interfaces/Ticket';
 
 class TotemCallsController {
+  // FUNÇÃO GERAR NOVA SENHA - NENHUMA PERMISSÃO
   public async store(req: Request, res: Response): Promise<Response> {
     var sql;
     var numberCall: string;
-    // clients[0].emit('msg', "P"+numberCall);
-    const sector: TicketInterface = req.body;
+    var firstLetter: string;
 
-    if (sector.prioritary !== undefined || sector.sectorId !== undefined) {
+    const tickets: TicketInterface = req.body;
+
+    if (tickets.prioritary !== undefined && tickets.sectorId !== undefined && tickets.sectorName !== undefined) {
       try {
-        /*
-        * Verifica se ja existe algum chamado no setor com a mesma tipo
-        */
+        firstLetter = getFirstLetter(tickets.sectorName);
+        /* VERIFICA SE FOI TIRADO ALGUMA SENHA (PARA PEGAR O NÚMERO DA ÚLTIMA) */
         sql = 'SELECT t.numero, s.nome FROM ticket t INNER JOIN setor s ON t.setor_id = s.id WHERE setor_id = $1 AND prioritario = $2 ORDER BY t.id DESC limit 1';
-        const { rows } = await poolTickets.query(sql, [sector.sectorId, sector.prioritary]);
+        const { rows } = await poolTickets.query(sql, [tickets.sectorId, tickets.prioritary]);
 
         if (rows.length === 0) {
-          sql = 'SELECT s.nome FROM setor s WHERE id = $1 limit 1';
-          const { rows } = await poolTickets.query(sql, [sector.sectorId]);
-          /*
-          * Se não haver chamado cria um com o numero 1
-          */
+          // CASO NÃO TENHA CHAMADOS, ADIONA COM NÚMERO 1
           sql = 'INSERT INTO ticket(numero, prioritario, setor_id) VALUES (1, $1, $2) returning numero';
-          const returning = await poolTickets.query(sql, [sector.prioritary, sector.sectorId]);
+          const returning = await poolTickets.query(sql, [tickets.prioritary, tickets.sectorId]);
 
-          numberCall = returning.rows[0].numero.toString().padStart(3, '0');
+          numberCall = returning.rows[0].numero.toString().padStart(2, '0');
 
-          if (sector.prioritary === true) {
-            return res.json({ numberCall: `P${numberCall}`, sector: rows[0].nome });
+          if (tickets.prioritary === true) {
+            return res.json({ numberCall: `${firstLetter}P${numberCall}`, sector: tickets.sectorName });
           }
 
-          return res.json({ numberCall: `N${numberCall}`, sector: rows[0].nome });
+          return res.json({ numberCall: `${firstLetter}N${numberCall}`, sector: tickets });
         } else {
-          /*
-          * Se não haver chamado pega o retorno e adiciona + 1
-          */
+          /* SE EXISTIR UM TICKET (PEGA O NÚMERO DO ULTIMO E ADIONA + 1) */
           sql = 'INSERT INTO ticket(numero, prioritario, setor_id) VALUES ($1, $2, $3) returning numero';
-          const returning = await poolTickets.query(sql, [rows[0].numero + 1, sector.prioritary, sector.sectorId]);
+          const returning = await poolTickets.query(sql, [rows[0].numero + 1, tickets.prioritary, tickets.sectorId]);
 
-          numberCall = returning.rows[0].numero.toString().padStart(3, '0');
+          numberCall = returning.rows[0].numero.toString().padStart(2, '0');
 
-          if (sector.prioritary === true) {
-            return res.json({ numberCall: `P${numberCall}`, sector: rows[0].nome });
+          if (tickets.prioritary === true) {
+            return res.json({ numberCall: `${firstLetter}P${numberCall}`, tickets: rows[0].nome });
           }
 
-          return res.json({ numberCall: `N${numberCall}`, sector: rows[0].nome });
+          return res.json({ numberCall: `${firstLetter}N${numberCall}`, tickets: rows[0].nome });
         }
       } catch (error) {
         return res.status(400).json(`Error${error}`);
       }
     }
 
-    return res.status(400).json('Post Error');
+    return res.status(400).json(' Not Found SectorId Or SectorName Or Prioritay! ');
   }
 }
 
 export default new TotemCallsController();
+
+function getFirstLetter(sectorName: string) {
+  return sectorName.substring(0, 1);
+}

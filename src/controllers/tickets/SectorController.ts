@@ -3,6 +3,7 @@ import { poolTickets } from '../../utils/dbconfig';
 import { SectorInterface } from '../../interfaces/Sector';
 
 class SectorController {
+  /* BANCO DE DADOS = SENHAS */
   public async index(req: Request, res: Response): Promise<Response> {
     try {
       const sql = 'SELECT * FROM setor';
@@ -32,5 +33,5 @@ class SectorController {
     return res.status(400).json('Post Error');
   }
 }
-/* TESTE */
+
 export default new SectorController();

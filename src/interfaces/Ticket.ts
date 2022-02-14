@@ -4,4 +4,5 @@ export interface TicketInterface {
   prioritary: boolean
   attendance?: boolean
   sectorId: number
+  sectorName: string
 }
