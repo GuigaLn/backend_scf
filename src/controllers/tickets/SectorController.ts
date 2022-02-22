@@ -6,7 +6,7 @@ class SectorController {
   /* BANCO DE DADOS = SENHAS */
   public async index(req: Request, res: Response): Promise<Response> {
     try {
-      const sql = 'SELECT * FROM setor';
+      const sql = 'SELECT * FROM setor_senha';
       const { rows } = await poolTickets.query(sql);
       const sector = rows;
 
@@ -21,7 +21,7 @@ class SectorController {
 
     if (sector.name || sector.name !== undefined) {
       try {
-        const sql = 'INSERT INTO setor(nome) VALUES($1) returning id';
+        const sql = 'INSERT INTO setor_senha(nome) VALUES($1) returning id';
         const returning = await poolTickets.query(sql, [sector.name]);
 
         return res.json(returning);

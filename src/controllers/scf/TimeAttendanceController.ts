@@ -150,7 +150,21 @@ async function getDates(startDate: any, stopDate: any, idEmployee: any, arrayDb:
         }
 
         if (arrayDb[finDate].two && !arrayDb[finDate].twoout) {
-          seconds = 0;
+          const timeTwo = arrayDb[finDate].two;
+          if (timeTwo > '14:30:00') {
+            arrayDb[finDate].twoout = timeTwo;
+            arrayDb[finDate].two = '13:00:00';
+            diff = moment(timeTwo, 'HH:mm:ss').diff(moment('13:00:00', 'HH:mm:ss'));
+            seconds += moment.duration(diff).asSeconds();
+
+            sumHours += moment.duration(diff).asSeconds();
+          } else {
+            arrayDb[finDate].twoout = '17:00:00';
+            diff = moment('17:00:00', 'HH:mm:ss').diff(moment(arrayDb[finDate].two, 'HH:mm:ss'));
+            seconds += moment.duration(diff).asSeconds();
+
+            sumHours += moment.duration(diff).asSeconds();
+          }
         }
 
         arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds);

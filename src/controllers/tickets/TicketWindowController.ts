@@ -17,7 +17,7 @@ class TicketWindowController {
     if (ticket.ticketWindow !== undefined && ticket.sectorId !== undefined) {
       try {
         /* VERIFICA SE EXISTE UMA SENHA PARA CHAMAR */
-        var sql = 'select t.id, t.numero, t.prioritario, t.atendimento, s.nome from ticket t inner join setor s on t.setor_id = s.id where t.atendimento = false and t.setor_id = $1 order by t.prioritario desc, t.numero asc limit 1';
+        var sql = 'select t.id, t.numero, t.prioritario, t.atendimento, s.nome from ticket t inner join setor_senha s on t.setor_id = s.id where t.atendimento = false and t.setor_id = $1 order by t.prioritario desc, t.numero asc limit 1';
         const { rows } = await poolTickets.query(sql, [ticket.sectorId]);
 
         if (rows.length > 0) {

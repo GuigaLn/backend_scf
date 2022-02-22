@@ -15,7 +15,7 @@ class TotemCallsController {
       try {
         firstLetter = getFirstLetter(tickets.sectorName);
         /* VERIFICA SE FOI TIRADO ALGUMA SENHA (PARA PEGAR O NÚMERO DA ÚLTIMA) */
-        sql = 'SELECT t.numero, s.nome FROM ticket t INNER JOIN setor s ON t.setor_id = s.id WHERE setor_id = $1 AND prioritario = $2 ORDER BY t.id DESC limit 1';
+        sql = 'SELECT t.numero, s.nome FROM ticket t INNER JOIN setor_senha s ON t.setor_id = s.id WHERE setor_id = $1 AND prioritario = $2 ORDER BY t.id DESC limit 1';
         const { rows } = await poolTickets.query(sql, [tickets.sectorId, tickets.prioritary]);
 
         if (rows.length === 0) {
