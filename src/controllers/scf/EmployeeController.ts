@@ -47,7 +47,7 @@ class EmployeeController {
     const employee: EmployeeInterface = req.body;
     if (employee.id !== undefined) {
       try {
-        const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, email as mail, telefone as phone, id_ubs as ubsid, id_funcao as occupationid FROM funcionario WHERE id = $1 AND (id_ubs = $2 OR 9 = $3)";
+        const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, email as mail, telefone as phone, id_ubs as ubsid, id_funcao as occupationid, carga_horaria as workload FROM funcionario WHERE id = $1 AND (id_ubs = $2 OR 9 = $3)";
         const { rows } = await poolScp.query(sql, [employee.id, req.idUbs, req.idUbs]);
         const returning = rows;
 
@@ -94,11 +94,12 @@ class EmployeeController {
       try {
         if (employee.cns === undefined) { employee.cns = null; }
         if (employee.registration === undefined) { employee.registration = null; }
+        if (employee.workload === undefined || employee.workload === null) { employee.workload = 8; }
 
-        const sql = 'INSERT INTO funcionario(nome, data_nascimento, cpf, cns, matricula, id_ubs)'
-        + 'VALUES($1, $2, $3, $4, $5, $6) returning id';
+        const sql = 'INSERT INTO funcionario(nome, data_nascimento, cpf, cns, matricula, id_ubs, carga_horaria)'
+        + 'VALUES($1, $2, $3, $4, $5, $6, $7) returning id';
 
-        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration, req.idUbs]);
+        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration, req.idUbs, employee.workload]);
 
         return res.json(returning);
       } catch (error) {
@@ -124,10 +125,11 @@ class EmployeeController {
         if (employee.seriesct === undefined) { employee.seriesct = null; }
         if (employee.phone === undefined) { employee.phone = null; }
         if (employee.mail === undefined) { employee.mail = null; }
+        if (employee.workload === undefined || employee.workload === null) { employee.workload = 8; }
 
-        const sql = 'UPDATE funcionario set nome = $1, data_nascimento = $2, cpf = $3, cns = $4, matricula = $5, numero_carteira = $6, serie_carteira = $7, telefone = $8, email = $9, id_ubs = $10, id_funcao = $11 WHERE id = $12';
+        const sql = 'UPDATE funcionario set nome = $1, data_nascimento = $2, cpf = $3, cns = $4, matricula = $5, numero_carteira = $6, serie_carteira = $7, telefone = $8, email = $9, id_ubs = $10, id_funcao = $11, carga_horaria = $12 WHERE id = $13';
 
-        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration, employee.numberct, employee.seriesct, employee.phone, employee.mail, employee.ubsid, employee.occupationid, employee.id]);
+        const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration, employee.numberct, employee.seriesct, employee.phone, employee.mail, employee.ubsid, employee.occupationid, employee.workload, employee.id]);
 
         return res.json(returning);
       } catch (error) {

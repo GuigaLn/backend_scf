@@ -11,4 +11,5 @@ export interface EmployeeInterface {
     phone: string|null
     ubsid: number
     occupationid: number
+    workload: number|null
 }

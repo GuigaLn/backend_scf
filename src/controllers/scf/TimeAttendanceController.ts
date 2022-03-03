@@ -23,7 +23,7 @@ class TimeAttendanceController {
     }
 
     try {
-      let sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 AND (f.id_ubs = $4 OR 9 = $5) ORDER BY data asc";
+      let sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs, f.carga_horaria as workload FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 AND (f.id_ubs = $4 OR 9 = $5) ORDER BY data asc";
 
       const { rows } = await poolScp.query(sql, [req.body.id, startDay, endDay, req.idUbs, req.idUbs]);
 
@@ -128,12 +128,26 @@ async function getDates(startDate: any, stopDate: any, idEmployee: any, arrayDb:
   let finDate = -1;
   let sumHours = 0;
 
+  let wordkload = 8;
+  let sumWorkload = 0;
+
+  if (arrayDb[0].workload !== undefined && arrayDb[0].workload !== null) {
+    wordkload = arrayDb[0].workload;
+  }
+
   while (currentDate <= endDate) {
     finDate = arrayDb.findIndex((obj: any) => obj.day === moment(currentDate).format('DD-MM-YYYY'));
 
+    if (moment(currentDate).weekday() === 1
+        || moment(currentDate).weekday() === 2
+        || moment(currentDate).weekday() === 3
+        || moment(currentDate).weekday() === 4
+        || moment(currentDate).weekday() === 5) {
+      sumWorkload += 1;
+    }
+
     if (finDate !== -1) {
       let seconds = 0;
-
       if (arrayDb[finDate].one && arrayDb[finDate].oneout) {
         /* PEGA A DIFERENÇA ENTRE OS HORARIOS EM SEGUNDOS */
         let diff = moment(arrayDb[finDate].oneout, 'HH:mm:ss').diff(moment(arrayDb[finDate].one, 'HH:mm:ss'));
@@ -167,7 +181,16 @@ async function getDates(startDate: any, stopDate: any, idEmployee: any, arrayDb:
           }
         }
 
-        arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds);
+        if (moment(currentDate).weekday() === 6) {
+          // SABADO 1.5X
+          arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds * 1.5);
+          sumHours += seconds / 2;
+        } else if (moment(currentDate).weekday() === 0) {
+          arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds * 2);
+          sumHours += seconds;
+        } else {
+          arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds);
+        }
       } else {
         arrayDb[finDate].sum = seconds === 0 ? '' : hhmmss(seconds);
       }
@@ -192,7 +215,7 @@ async function getDates(startDate: any, stopDate: any, idEmployee: any, arrayDb:
     currentDate = moment(currentDate).add(1, 'days');
   }
 
-  return { list: dateArray, sumHours: hhmmss(sumHours) };
+  return { list: dateArray, sumHours: hhmmss(sumHours), minWorkTime: sumWorkload * wordkload };
 }
 
 /* RETORNA O NOME DO DIA DA SEMANA */
@@ -208,12 +231,12 @@ function getWeek(dayWeek: number) {
 }
 
 /* RETORNA O SEGUNDOS EM HH:MM:SS */
-function hhmmss(secs: any) {
+function hhmmss(secs: number) {
   let minutes = Math.floor(secs / 60);
   secs %= 60;
   const hours = Math.floor(minutes / 60);
   minutes %= 60;
-  return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
+  return `${pad(hours)}:${pad(minutes)}:${pad(Math.round(secs))}`;
 }
 
 /* FORMATA O NUMERO */
