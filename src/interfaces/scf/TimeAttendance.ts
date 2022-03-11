@@ -7,8 +7,7 @@ export interface TimeAttendanceInterface {
     firstExit: string
     secondEntry: string
     secondExit: string
-    thirdEntry: string
-    thirdExit: string
+    valided: boolean
     idEmployee: number
     registration: number
     note: number

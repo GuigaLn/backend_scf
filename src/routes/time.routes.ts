@@ -8,6 +8,7 @@ const timeRouter = Router();
 
 timeRouter.post('/', TimeAttendanceController.store);
 timeRouter.put('/', ensureAuthenticated, TimeAttendanceController.update);
+timeRouter.put('/valided', ensureAuthenticated, TimeAttendanceController.valided);
 
 timeRouter.post('/detail', ensureAuthenticated, TimeAttendanceController.index);
 
