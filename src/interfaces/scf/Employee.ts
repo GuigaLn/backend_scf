@@ -12,4 +12,5 @@ export interface EmployeeInterface {
     ubsid: number
     occupationid: number
     workload: number|null
+    extraHour: string
 }

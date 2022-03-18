@@ -12,4 +12,5 @@ export interface TimeAttendanceInterface {
     registration: number
     note: number
     score: Timestamp
+    hours: string
 }

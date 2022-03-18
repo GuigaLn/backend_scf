@@ -47,7 +47,7 @@ class EmployeeController {
     const employee: EmployeeInterface = req.body;
     if (employee.id !== undefined) {
       try {
-        const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, email as mail, telefone as phone, id_ubs as ubsid, id_funcao as occupationid, carga_horaria as workload FROM funcionario WHERE id = $1 AND (id_ubs = $2 OR 9 = $3)";
+        const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, email as mail, telefone as phone, id_ubs as ubsid, id_funcao as occupationid, carga_horaria as workload, hora_extra as extraHour FROM funcionario WHERE id = $1 AND (id_ubs = $2 OR 9 = $3)";
         const { rows } = await poolScp.query(sql, [employee.id, req.idUbs, req.idUbs]);
         const returning = rows;
 
@@ -130,6 +130,35 @@ class EmployeeController {
         const sql = 'UPDATE funcionario set nome = $1, data_nascimento = $2, cpf = $3, cns = $4, matricula = $5, numero_carteira = $6, serie_carteira = $7, telefone = $8, email = $9, id_ubs = $10, id_funcao = $11, carga_horaria = $12 WHERE id = $13';
 
         const returning = await poolScp.query(sql, [employee.name.toUpperCase(), employee.birthday, employee.cpf, employee.cns, employee.registration, employee.numberct, employee.seriesct, employee.phone, employee.mail, employee.ubsid, employee.occupationid, employee.workload, employee.id]);
+
+        return res.json(returning);
+      } catch (error) {
+        return res.status(400).json(error);
+      }
+    }
+    return res.status(400).json({ status: '400', msg: 'Falta de Dados!' });
+  }
+
+  /* FUNÇÃO ADICIONAR HORA EXTRA FUNCIONÁRIOS - PERMISSÃO NECESSARIO 4 */
+  public async addExtraHours(req: Request, res: Response): Promise<Response> {
+    // APENAS - SMS
+    if (req.idUbs !== 9) { return res.status(403).send('Access for administrators only'); }
+
+    if (!checkPermision(1, req.userPermissions)) {
+      return res.status(403).json({ status: ' Not Permision ' });
+    }
+
+    const { description } = req.body;
+    const employee: EmployeeInterface = req.body;
+
+    if (employee.id !== undefined && employee.id !== null && employee.extraHour !== undefined && employee.extraHour !== null && description !== null && description !== undefined) {
+      try {
+        let sql = 'INSERT INTO historico_hora_extra(descricao, hora_extra, id_funcionario, gerado_por) VALUES ($1, $2, $3, $4)';
+        await poolScp.query(sql, [description, employee.extraHour, employee.id, req.user]);
+
+        sql = 'UPDATE funcionario set hora_extra = hora_extra + $1 WHERE id = $2';
+
+        const returning = await poolScp.query(sql, [employee.extraHour, employee.id]);
 
         return res.json(returning);
       } catch (error) {

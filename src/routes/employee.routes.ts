@@ -14,5 +14,6 @@ employeeRouter.put('/', EmployeeController.update);
 employeeRouter.get('/shortlist', EmployeeController.shortList);
 employeeRouter.post('/detail', EmployeeController.detail);
 employeeRouter.post('/detailforepi', EmployeeController.detailForEpi);
+employeeRouter.post('/addextrahours', EmployeeController.addExtraHours);
 
 export default employeeRouter;

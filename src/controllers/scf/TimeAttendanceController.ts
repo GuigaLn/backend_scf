@@ -23,7 +23,7 @@ class TimeAttendanceController {
     }
 
     try {
-      let sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs, po.id as idobs, p.validado as valided, f.carga_horaria as workload FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 AND (f.id_ubs = $4 OR 9 = $5) ORDER BY data asc";
+      let sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs, po.id as idobs, p.validado as valided, p.horas as hours, f.carga_horaria as workload FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 AND (f.id_ubs = $4 OR 9 = $5) ORDER BY data asc";
 
       const { rows } = await poolScp.query(sql, [req.body.id, startDay, endDay, req.idUbs, req.idUbs]);
 
@@ -124,9 +124,9 @@ class TimeAttendanceController {
     const timeAttedance: TimeAttendanceInterface = req.body;
     try {
       let sql;
-      if (timeAttedance.id !== undefined && timeAttedance.id) {
-        sql = 'UPDATE ponto set validado = $1 WHERE id = $2';
-        return res.json(await poolScp.query(sql, [true, timeAttedance.id]));
+      if (timeAttedance.id !== undefined && timeAttedance.id && timeAttedance.hours !== undefined && timeAttedance.hours) {
+        sql = 'UPDATE ponto set validado = $1, horas = $2 WHERE id = $3';
+        return res.json(await poolScp.query(sql, [true, timeAttedance.hours, timeAttedance.id]));
       }
 
       return res.status(400).json('Error');
@@ -165,80 +165,76 @@ async function getDates(startDate: any, stopDate: any, idEmployee: any, arrayDb:
     }
 
     if (finDate !== -1) {
-      // VERIFICA SE É ATESTADO MÉDICO
-      if (arrayDb[finDate].idobs === 2 || arrayDb[finDate].idobs === 5 || arrayDb[finDate].valided === true) {
-        sumHours += wordkload * 60 * 60;
-      }
-
-      let seconds = 0;
-      if (arrayDb[finDate].one && arrayDb[finDate].oneout) {
-        /* PEGA A DIFERENÇA ENTRE OS HORARIOS EM SEGUNDOS */
-        let diff = moment(arrayDb[finDate].oneout, 'HH:mm:ss').diff(moment(arrayDb[finDate].one, 'HH:mm:ss'));
-        seconds = moment.duration(diff).asSeconds();
-        if (!arrayDb[finDate].two && !arrayDb[finDate].twoout) {
-          if (seconds >= wordkload * 60 * 60) {
-            const { oneout } = arrayDb[finDate];
-            arrayDb[finDate].oneout = '12:00:00';
-            arrayDb[finDate].two = '13:00:00';
-            arrayDb[finDate].twoout = oneout;
-
-            diff = moment(arrayDb[finDate].oneout, 'HH:mm:ss').diff(moment(arrayDb[finDate].one, 'HH:mm:ss'));
+      if (arrayDb[finDate].hours !== null && arrayDb[finDate].idobs !== 2 && arrayDb[finDate].idobs !== 5) {
+        sumHours += moment.duration(arrayDb[finDate].hours).asSeconds();
+        arrayDb[finDate].sum = arrayDb[finDate].hours;
+      } else {
+        // VERIFICA SE É ATESTADO MÉDICO
+        // eslint-disable-next-line no-lonely-if
+        if (arrayDb[finDate].idobs === 2 || arrayDb[finDate].idobs === 5) {
+          sumHours += wordkload * 60 * 60;
+        } else {
+          let seconds = 0;
+          if (arrayDb[finDate].one && arrayDb[finDate].oneout) {
+            /* PEGA A DIFERENÇA ENTRE OS HORARIOS EM SEGUNDOS */
+            let diff = moment(arrayDb[finDate].oneout, 'HH:mm:ss').diff(moment(arrayDb[finDate].one, 'HH:mm:ss'));
             seconds = moment.duration(diff).asSeconds();
-          }
-        }
+            if (!arrayDb[finDate].two && !arrayDb[finDate].twoout) {
+              if (seconds >= wordkload * 60 * 60) {
+                const { oneout } = arrayDb[finDate];
+                arrayDb[finDate].oneout = '12:00:00';
+                arrayDb[finDate].two = '13:00:00';
+                arrayDb[finDate].twoout = oneout;
 
-        if (arrayDb[finDate].valided !== true) {
-          sumHours += seconds;
-        }
-
-        if (arrayDb[finDate].two && arrayDb[finDate].twoout) {
-          diff = moment(arrayDb[finDate].twoout, 'HH:mm:ss').diff(moment(arrayDb[finDate].two, 'HH:mm:ss'));
-          seconds += moment.duration(diff).asSeconds();
-
-          if (arrayDb[finDate].valided !== true) {
-            sumHours += moment.duration(diff).asSeconds();
-          }
-        }
-
-        if (arrayDb[finDate].two && !arrayDb[finDate].twoout) {
-          if (arrayDb[finDate].day !== moment().format('DD-MM-YYYY')) {
-            const timeTwo = arrayDb[finDate].two;
-            if (timeTwo > '14:30:00') {
-              arrayDb[finDate].twoout = timeTwo;
-              arrayDb[finDate].two = '13:00:00';
-              diff = moment(timeTwo, 'HH:mm:ss').diff(moment('13:00:00', 'HH:mm:ss'));
-              seconds += moment.duration(diff).asSeconds();
-
-              if (arrayDb[finDate].valided !== true) {
-                sumHours += moment.duration(diff).asSeconds();
-              }
-            } else {
-              arrayDb[finDate].twoout = '17:00:00';
-              diff = moment('17:00:00', 'HH:mm:ss').diff(moment(arrayDb[finDate].two, 'HH:mm:ss'));
-              seconds += moment.duration(diff).asSeconds();
-
-              if (arrayDb[finDate].valided !== true) {
-                sumHours += moment.duration(diff).asSeconds();
+                diff = moment(arrayDb[finDate].oneout, 'HH:mm:ss').diff(moment(arrayDb[finDate].one, 'HH:mm:ss'));
+                seconds = moment.duration(diff).asSeconds();
               }
             }
+
+            sumHours += seconds;
+
+            if (arrayDb[finDate].two && arrayDb[finDate].twoout) {
+              diff = moment(arrayDb[finDate].twoout, 'HH:mm:ss').diff(moment(arrayDb[finDate].two, 'HH:mm:ss'));
+              seconds += moment.duration(diff).asSeconds();
+
+              sumHours += moment.duration(diff).asSeconds();
+            }
+
+            if (arrayDb[finDate].two && !arrayDb[finDate].twoout) {
+              if (arrayDb[finDate].day !== moment().format('DD-MM-YYYY')) {
+                const timeTwo = arrayDb[finDate].two;
+                if (timeTwo > '14:30:00') {
+                  arrayDb[finDate].twoout = timeTwo;
+                  arrayDb[finDate].two = '13:00:00';
+                  diff = moment(timeTwo, 'HH:mm:ss').diff(moment('13:00:00', 'HH:mm:ss'));
+                  seconds += moment.duration(diff).asSeconds();
+
+                  sumHours += moment.duration(diff).asSeconds();
+                } else {
+                  arrayDb[finDate].twoout = '17:00:00';
+                  diff = moment('17:00:00', 'HH:mm:ss').diff(moment(arrayDb[finDate].two, 'HH:mm:ss'));
+                  seconds += moment.duration(diff).asSeconds();
+
+                  sumHours += moment.duration(diff).asSeconds();
+                }
+              }
+            }
+
+            // ATRIBUI O TOTAL DE HORAS DIARIAS
+            if (moment(currentDate).weekday() === 6) {
+              // SABADO 1.5X
+              arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds * 1.5);
+              sumHours += seconds / 2;
+            } else if (moment(currentDate).weekday() === 0) {
+              arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds * 2);
+              sumHours += seconds;
+            } else {
+              arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds);
+            }
+          } else {
+            arrayDb[finDate].sum = seconds === 0 ? '' : hhmmss(seconds);
           }
         }
-
-        // ATRIBUI O TOTAL DE HORAS DIARIAS
-        if (moment(currentDate).weekday() === 6) {
-          // SABADO 1.5X
-          arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds * 1.5);
-          arrayDb[finDate].valided = true;
-          sumHours += seconds / 2;
-        } else if (moment(currentDate).weekday() === 0) {
-          arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds * 2);
-          arrayDb[finDate].valided = true;
-          sumHours += seconds;
-        } else {
-          arrayDb[finDate].sum = seconds === 0 ? 'BATIDA INCORRETA' : hhmmss(seconds);
-        }
-      } else {
-        arrayDb[finDate].sum = seconds === 0 ? '' : hhmmss(seconds);
       }
 
       arrayDb[finDate].week = getWeek(moment(currentDate).weekday());
