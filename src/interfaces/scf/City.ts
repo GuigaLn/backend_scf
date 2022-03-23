@@ -1,4 +1,4 @@
 export interface CityInterface {
     id: string
-    description: boolean
+    description: string
 }

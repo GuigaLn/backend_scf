@@ -1,4 +1,4 @@
 export interface OccupationInterface {
     id: string
-    description: boolean
+    description: string
 }

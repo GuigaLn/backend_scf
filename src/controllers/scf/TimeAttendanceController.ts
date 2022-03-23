@@ -124,9 +124,14 @@ class TimeAttendanceController {
     const timeAttedance: TimeAttendanceInterface = req.body;
     try {
       let sql;
+
+      if(req.body.one === null || req.body.oneout === null || req.body.two === null || req.body.twoout === null) {
+        return res.status(400).json('Falta de Dados');
+      }
+
       if (timeAttedance.id !== undefined && timeAttedance.id && timeAttedance.hours !== undefined && timeAttedance.hours) {
-        sql = 'UPDATE ponto set validado = $1, horas = $2 WHERE id = $3';
-        return res.json(await poolScp.query(sql, [true, timeAttedance.hours, timeAttedance.id]));
+        sql = 'UPDATE ponto set validado = $1, horas = $2, primeira_entrada = $3, primeira_saida = $4, segunda_entrada = $5, segunda_saida = $6 WHERE id = $7';
+        return res.json(await poolScp.query(sql, [true, timeAttedance.hours, req.body.one, req.body.oneout, req.body.two, req.body.twoout, timeAttedance.id]));
       }
 
       return res.status(400).json('Error');
@@ -171,7 +176,7 @@ async function getDates(startDate: any, stopDate: any, idEmployee: any, arrayDb:
       } else {
         // VERIFICA SE É ATESTADO MÉDICO
         // eslint-disable-next-line no-lonely-if
-        if (arrayDb[finDate].idobs === 2 || arrayDb[finDate].idobs === 5) {
+        if (arrayDb[finDate].idobs === 2 || arrayDb[finDate].idobs === 5 || arrayDb[finDate].idobs === 11) {
           sumHours += wordkload * 60 * 60;
         } else {
           let seconds = 0;

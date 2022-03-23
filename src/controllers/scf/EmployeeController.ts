@@ -2,6 +2,7 @@ import { Request, response, Response } from 'express';
 import { poolScp } from '../../utils/dbconfig';
 import { EmployeeInterface } from '../../interfaces/scf/Employee';
 import { checkPermision } from '../../utils/checkPermision';
+import moment from 'moment';
 
 class EmployeeController {
   /* FUNÇÃO LISTAR FUNCIONÁRIOS POR UBS - PERMISSÃO NECESSARIO 4 */
@@ -28,7 +29,7 @@ class EmployeeController {
         return res.status(403).json({ status: ' Not Permision ' });
       }
 
-      const sql = 'SELECT id, matricula as registration, nome as name, id as idemployee FROM funcionario WHERE ponto = true AND (id_ubs = $1 OR 9 = $2) AND demisao IS NULL ORDER BY nome ASC';
+      const sql = 'SELECT id, matricula as registration, nome as name, id as idemployee FROM funcionario WHERE ponto = true AND (id_ubs = $1 OR 9 = $2) AND matricula IS NOT NULL AND demisao IS NULL ORDER BY nome ASC';
       const { rows } = await poolScp.query(sql, [req.idUbs, req.idUbs]);
       const returning = rows;
 
@@ -49,6 +50,7 @@ class EmployeeController {
       try {
         const sql = "SELECT id, nome as name, to_char(data_nascimento, 'DD-MM-YYYY') as birthday, to_char(data_nascimento, 'YYYY-MM-DD') as bedit, cpf, cns, matricula as registration, numero_carteira as numberct, serie_carteira as seriesct, email as mail, telefone as phone, id_ubs as ubsid, id_funcao as occupationid, carga_horaria as workload, hora_extra as extraHour FROM funcionario WHERE id = $1 AND (id_ubs = $2 OR 9 = $3)";
         const { rows } = await poolScp.query(sql, [employee.id, req.idUbs, req.idUbs]);
+        rows[0].extrahour = hhmmss(rows[0].extrahour);
         const returning = rows;
 
         return res.send(returning);
@@ -158,7 +160,7 @@ class EmployeeController {
 
         sql = 'UPDATE funcionario set hora_extra = hora_extra + $1 WHERE id = $2';
 
-        const returning = await poolScp.query(sql, [employee.extraHour, employee.id]);
+        const returning = await poolScp.query(sql, [moment.duration(employee.extraHour).asSeconds(), employee.id]);
 
         return res.json(returning);
       } catch (error) {
@@ -167,6 +169,55 @@ class EmployeeController {
     }
     return res.status(400).json({ status: '400', msg: 'Falta de Dados!' });
   }
+
+  /* FUNÇÃO FOLGA FUNCIONÁRIOS - PERMISSÃO NECESSARIO 4 */
+  public async addDayOff(req: Request, res: Response): Promise<Response> {
+    // APENAS - SMS
+    if (req.idUbs !== 9) { return res.status(403).send('Access for administrators only'); }
+
+    if (!checkPermision(1, req.userPermissions)) {
+      return res.status(403).json({ status: ' Not Permision ' });
+    }
+
+    const { description, day } = req.body;
+
+    const employee: EmployeeInterface = req.body;
+
+    if (employee.id !== undefined && employee.id !== null && employee.extraHour !== undefined && employee.extraHour !== null && day !== null && day !== undefined) {
+      try {
+        const descriptionWithDay = `Folga - ${moment(day).format('DD/MM/YYYY')}`;
+        let sql = 'INSERT INTO historico_hora_extra(descricao, hora_extra, id_funcionario, gerado_por) VALUES ($1, $2, $3, $4)';
+        await poolScp.query(sql, [descriptionWithDay, employee.extraHour, employee.id, req.user]);
+
+        sql = 'UPDATE funcionario set hora_extra = hora_extra - $1 WHERE id = $2';
+
+        const returning = await poolScp.query(sql, [moment.duration(employee.extraHour).asSeconds(), employee.id]);
+
+        return res.json(returning);
+      } catch (error) {
+        console.log(error)
+        return res.status(400).json(error);
+      }
+    }
+    return res.status(400).json({ status: '400', msg: 'Falta de Dados!' });
+  }
+}
+
+/* RETORNA O SEGUNDOS EM HH:MM:SS */
+function hhmmss(secs: number) {
+  let minutes = Math.floor(secs / 60);
+  secs %= 60;
+  const hours = Math.floor(minutes / 60);
+  minutes %= 60;
+  return `${pad(hours)}:${pad(minutes)}:${pad(Math.round(secs))}`;
+}
+
+/* FORMATA O NUMERO */
+function pad(num: any) {
+  if (num > 100) {
+    return num;
+  }
+  return (`0${num}`).slice(-2);
 }
 
 export default new EmployeeController();

@@ -15,5 +15,6 @@ employeeRouter.get('/shortlist', EmployeeController.shortList);
 employeeRouter.post('/detail', EmployeeController.detail);
 employeeRouter.post('/detailforepi', EmployeeController.detailForEpi);
 employeeRouter.post('/addextrahours', EmployeeController.addExtraHours);
+employeeRouter.post('/adddayoff', EmployeeController.addDayOff);
 
 export default employeeRouter;

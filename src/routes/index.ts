@@ -14,6 +14,7 @@ import timeRouter from './time.routes';
 import ubsRouter from './ubs.routes';
 import vacationRouter from './vacation.routes';
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
+import overtimeRouter from './overtime.routes';
 
 const routes = Router();
 
@@ -38,5 +39,6 @@ routes.use('/occupation', occupationRouter);
 routes.use('/ubs', ubsRouter);
 routes.use('/time', timeRouter);
 routes.use('/vacation', vacationRouter);
+routes.use('/overtime', overtimeRouter);
 
 export default routes;
