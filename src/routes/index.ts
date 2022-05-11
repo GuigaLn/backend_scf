@@ -42,7 +42,7 @@ routes.use('/vacation', vacationRouter);
 routes.use('/overtime', overtimeRouter);
 routes.post('/sincronizar', (request, response) => {
   console.log(request.body);
-  return response.json('');
+  return response.json(request.body);
 });
 
 export default routes;
