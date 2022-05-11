@@ -125,7 +125,7 @@ class TimeAttendanceController {
     try {
       let sql;
 
-      if(req.body.one === null || req.body.oneout === null || req.body.two === null || req.body.twoout === null) {
+      if (req.body.one === null || req.body.oneout === null || req.body.two === null || req.body.twoout === null) {
         return res.status(400).json('Falta de Dados');
       }
 

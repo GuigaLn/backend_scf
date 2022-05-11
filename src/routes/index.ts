@@ -40,5 +40,9 @@ routes.use('/ubs', ubsRouter);
 routes.use('/time', timeRouter);
 routes.use('/vacation', vacationRouter);
 routes.use('/overtime', overtimeRouter);
+routes.post('/sincronizar', (request, response) => {
+  console.log(request.body);
+  return response.json('');
+});
 
 export default routes;
