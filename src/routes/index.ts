@@ -15,6 +15,7 @@ import ubsRouter from './ubs.routes';
 import vacationRouter from './vacation.routes';
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 import overtimeRouter from './overtime.routes';
+import syncRouter from './sync.routes';
 
 const routes = Router();
 
@@ -40,9 +41,6 @@ routes.use('/ubs', ubsRouter);
 routes.use('/time', timeRouter);
 routes.use('/vacation', vacationRouter);
 routes.use('/overtime', overtimeRouter);
-routes.post('/sincronizar', (request, response) => {
-  console.log(request.body);
-  return response.json(request.body);
-});
+routes.use('/sincronizar', syncRouter);
 
 export default routes;
