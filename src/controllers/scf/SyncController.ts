@@ -5,6 +5,7 @@ class SyncController {
   /* FUNÇÃO DE SINCRONIZAÇÃO - PERMISSÃO NECESSARIO NENHUMA */
   public async index(req: Request, res: Response): Promise<Response> {
     try {
+      console.log(1);
       if (req.body.idUser === '' || !req.body.idUser) { return res.status(400); }
       let sql = 'SELECT * FROM acs_localizacao WHERE id_acs = $1';
       const { rows } = await poolScp.query(sql, [req.body.idUser]);
