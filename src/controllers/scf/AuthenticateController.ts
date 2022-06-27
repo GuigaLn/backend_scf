@@ -1,10 +1,10 @@
-import { Request, response, Response } from 'express';
 import { compare, hash } from 'bcryptjs';
+import { Request, Response } from 'express';
 import { sign } from 'jsonwebtoken';
-import { poolScp } from '../../utils/dbconfig';
-import { LoginInterface } from '../../interfaces/scf/Login';
 import authConfig from '../../config/auth';
+import { LoginInterface } from '../../interfaces/scf/Login';
 import { checkPermision } from '../../utils/checkPermision';
+import { poolScp } from '../../utils/dbconfig';
 
 class AuthenticateController {
   /* FUNÇÃO DE LOGIN - PERMISSÃO NECESSARIO NENHUMA */
@@ -76,6 +76,34 @@ class AuthenticateController {
         sql = 'INSERT INTO usuario_login(login, senha, id_funcionario, id_setor, id_unidade_de_saude) VALUES ($1, $2, $3, $4, $5)';
 
         const returning = await poolScp.query(sql, [loginReq.login, hashedPassowrd, loginReq.idEmployee, 1, 9]);
+
+        return res.json(returning);
+      } catch (error) {
+        return res.status(400).json(error);
+      }
+    }
+
+    return res.status(400).json({ status: '400', msg: 'Falta de Dados!' });
+  }
+
+  /* FUNÇÃO PARA CADASTRAR USUARIO - PERMISSÃO NECESSARIO 1 */
+  public async newPassword(req: Request, res: Response) {
+    // APENAS - SMS
+    if (req.idUbs !== 9) { return res.status(401).send('Access for administrators only'); }
+
+    if (!checkPermision(1, req.userPermissions)) {
+      return res.status(403).json({ status: ' Not Permision ' });
+    }
+
+    const loginReq: LoginInterface = req.body;
+
+    if (loginReq.password && loginReq.id) {
+      try {
+        const hashedPassowrd = await hash(loginReq.password, 8);
+
+        const sql = 'UPDATE usuario_login SET senha = $1 WHERE id = $2';
+
+        const returning = await poolScp.query(sql, [hashedPassowrd, loginReq.id]);
 
         return res.json(returning);
       } catch (error) {

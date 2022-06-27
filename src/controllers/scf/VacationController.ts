@@ -1,8 +1,8 @@
-import { Request, RequestHandler, Response } from 'express';
+import { Request, Response } from 'express';
 import moment from 'moment';
-import { poolScp } from '../../utils/dbconfig';
 import { VacationInterface } from '../../interfaces/scf/Vacation';
 import { checkPermision } from '../../utils/checkPermision';
+import { poolScp } from '../../utils/dbconfig';
 
 class VacationController {
   /* FUNÇÃO LISTAR FUNCIONÁRIOS DE FÉRIAS - PERMISSÃO NECESSARIO 4 */
@@ -53,10 +53,10 @@ class VacationController {
 
     try {
       const vacation: VacationInterface = req.body;
-
+      console.log(vacation.id);
       if (!vacation.id || vacation.id === undefined) { return res.status(400).json('ID Not Defined!'); }
 
-      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.gozo as enjoyment, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, to_char(f.data_inicial , 'DD-MM-YYYY') as dateInitial, to_char(f.data_final , 'DD-MM-YYYY') as dateEnd, f.gerado as created_at, fu.nome as name, fu.numero_carteira as numberct, fu.serie_carteira as seriesct, funcao.descricao as occupation FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id WHERE f.autorizado_por is not null AND f.id = $1 AND (fu.id_ubs = $2 OR 9 = $3) limit 1";
+      const sql = "SELECT f.id, f.ferias as vacation, f.quitacao as discharge, f.gozo as enjoyment, f.periodo_aquisitivo as vestingPeriod, f.quantidade_dias as daysPeriod, to_char(f.data_inicial , 'DD-MM-YYYY') as dateInitial, to_char(f.data_final , 'DD-MM-YYYY') as dateEnd, f.gerado as created_at, fu.nome as name, fu.cpf, fu.numero_carteira as numberct, fu.serie_carteira as seriesct, funcao.descricao as occupation, funcao.id as idoccupation FROM ferias f INNER JOIN funcionario fu ON f.id_funcionario = fu.id INNER JOIN funcao ON f.id_funcao = funcao.id WHERE f.autorizado_por is not null AND f.id = $1 AND (fu.id_ubs = $2 OR 9 = $3) limit 1";
 
       const { rows } = await poolScp.query(sql, [vacation.id, req.idUbs, req.idUbs]);
       // Cruz Machado, 12 de janeiro de 2022.
@@ -70,6 +70,7 @@ class VacationController {
 
       return res.send({ text, name: rows[0].name, dateNow: `Cruz Machado, ${day} de ${month} de ${year}.` });
     } catch (error) {
+      console.log(error);
       return res.status(400).send(error);
     }
   }
@@ -207,7 +208,14 @@ function getMonth(month: number) {
 function getText(data: any) {
   var preText;
   // VERIFICA SE REQUER GOZO DE FÉRIAS
-  if (data.enjoyment === true) {
+  console.log(data);
+
+  if (data.idoccupation === 9) {
+    preText = `Eu ${data.name} `
+      + `portador(a) do CPF nº ${data.cpf} , exercendo a função de ${data.occupation}, `
+      + `venho mui respeitosamente solicitar férias no  período de ${data.daysperiod} dias `
+      + `a contar do dia ${data.dateinitial.replaceAll('-', '/')} ao ${data.dateend.replaceAll('-', '/')}.`;
+  } else if (data.enjoyment === true) {
     if (data.vacation === true) {
       preText = `Eu ${data.name} Número: ${data.numberct} Série: ${data.seriesct}, `
       + `servidor Público desta Municipalidade, exercendo a função de ${data.occupation}, `
