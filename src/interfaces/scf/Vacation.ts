@@ -11,4 +11,5 @@ export interface VacationInterface {
     idOccupation: number
     idSystemUser: number
     createdAt: Date
+    cancellationReason: string
 }

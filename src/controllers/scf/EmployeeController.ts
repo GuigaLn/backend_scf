@@ -1,8 +1,8 @@
-import { Request, response, Response } from 'express';
-import { poolScp } from '../../utils/dbconfig';
+import { Request, Response } from 'express';
+import moment from 'moment';
 import { EmployeeInterface } from '../../interfaces/scf/Employee';
 import { checkPermision } from '../../utils/checkPermision';
-import moment from 'moment';
+import { poolScp } from '../../utils/dbconfig';
 
 class EmployeeController {
   /* FUNÇÃO LISTAR FUNCIONÁRIOS POR UBS - PERMISSÃO NECESSARIO 4 */
@@ -119,7 +119,7 @@ class EmployeeController {
 
     const employee: EmployeeInterface = req.body.data;
 
-    if (employee.id !== undefined && employee.id !== null && employee.name !== undefined && employee.birthday !== undefined && employee.cpf !== undefined) {
+    if (employee.id !== undefined && employee.id !== null && employee.name !== undefined && employee.birthday && employee.cpf !== undefined) {
       try {
         if (employee.cns === undefined) { employee.cns = null; }
         if (employee.registration === undefined) { employee.registration = null; }
@@ -195,7 +195,7 @@ class EmployeeController {
 
         return res.json(returning);
       } catch (error) {
-        console.log(error)
+        console.log(error);
         return res.status(400).json(error);
       }
     }
