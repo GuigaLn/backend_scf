@@ -143,10 +143,7 @@ class EmployeeController {
 
   /* FUNÇÃO ADICIONAR HORA EXTRA FUNCIONÁRIOS - PERMISSÃO NECESSARIO 4 */
   public async addExtraHours(req: Request, res: Response): Promise<Response> {
-    // APENAS - SMS
-    if (req.idUbs !== 9) { return res.status(403).send('Access for administrators only'); }
-
-    if (!checkPermision(1, req.userPermissions)) {
+    if (!checkPermision(4, req.userPermissions)) {
       return res.status(403).json({ status: ' Not Permision ' });
     }
 
@@ -172,14 +169,11 @@ class EmployeeController {
 
   /* FUNÇÃO FOLGA FUNCIONÁRIOS - PERMISSÃO NECESSARIO 4 */
   public async addDayOff(req: Request, res: Response): Promise<Response> {
-    // APENAS - SMS
-    if (req.idUbs !== 9) { return res.status(403).send('Access for administrators only'); }
-
-    if (!checkPermision(1, req.userPermissions)) {
+    if (!checkPermision(4, req.userPermissions)) {
       return res.status(403).json({ status: ' Not Permision ' });
     }
 
-    const { description, day } = req.body;
+    const { day } = req.body;
 
     const employee: EmployeeInterface = req.body;
 
@@ -195,7 +189,6 @@ class EmployeeController {
 
         return res.json(returning);
       } catch (error) {
-        console.log(error);
         return res.status(400).json(error);
       }
     }
