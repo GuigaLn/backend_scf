@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { CityInterface } from '../../interfaces/scf/City';
 import { ContactInterface } from '../../interfaces/scf/Contact';
+import { HistoricMessageInterface } from '../../interfaces/scf/HistoricMessage';
 import { checkPermision } from '../../utils/checkPermision';
 import { poolScp } from '../../utils/dbconfig';
 
@@ -82,6 +83,24 @@ class ContactController {
     }
 
     return res.status(400).json({ status: '400', msg: 'ID não localizado!' });
+  }
+
+  /* FUNÇÃO PARA ARAMAZENAR O HISTORICO DE MENSAGENS - PERMISSÃO NECESSARIO NENHUMA */
+  public async storeHistoricMessage(req: Request, res: Response): Promise<Response> {
+    const msg: HistoricMessageInterface = req.body;
+
+    if (msg.message !== undefined && msg.message !== '' && msg.phone !== '' && msg.phone !== undefined) {
+      try {
+        const sql = 'INSERT INTO historico_mensagens(mensagem, telefone, usuario_login_id) VALUES($1, $2, $3)';
+        await poolScp.query(sql, [msg.message, msg.phone, req.user]);
+
+        return res.json('Mensagem armazenada');
+      } catch (error) {
+        return res.status(500).json(error);
+      }
+    }
+
+    return res.status(400).json({ status: '400', msg: 'Nome ou telefone não fornecidos!' });
   }
 }
 

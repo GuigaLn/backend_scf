@@ -12,5 +12,6 @@ contactRouter.get('/', ContactController.index);
 contactRouter.post('/', ContactController.store);
 contactRouter.post('/delete', ContactController.delete);
 contactRouter.put('/', ContactController.update);
+contactRouter.post('/storeHistoricMessage', ContactController.storeHistoricMessage);
 
 export default contactRouter;
