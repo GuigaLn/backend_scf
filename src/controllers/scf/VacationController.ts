@@ -259,26 +259,26 @@ function getText(data: any) {
   var preText;
   // VERIFICA SE REQUER GOZO DE FÉRIAS
   if (data.idoccupation === 9) {
-    preText = `Eu ${data.name} `
+    preText = `Eu ${data.name}, `
       + `portador(a) do CPF nº ${data.cpf} , exercendo a função de ${data.occupation}, `
       + `venho mui respeitosamente solicitar férias no  período de ${data.daysperiod} dias `
       + `a contar do dia ${data.dateinitial.replaceAll('-', '/')} ao ${data.dateend.replaceAll('-', '/')}.`;
   } else if (data.enjoyment === true) {
     if (data.vacation === true) {
-      preText = `Eu ${data.name} Número: ${data.numberct} Série: ${data.seriesct}, `
+      preText = `Eu ${data.name}, portador(a) do CPF nº ${data.cpf}, `
       + `servidor Público desta Municipalidade, exercendo a função de ${data.occupation}, `
       + 'em conformidade com a Lei Complementar nº 001/2006, Capítulo IV. Art 94, venho mui '
       + `respeitosamente requerer ${data.discharge ? 'gozo e quitação' : 'gozo'} das Férias referente ao período aquisitivo ${data.vestingperiod} no `
       + `período de ${data.daysperiod} dias a contar do dia ${data.dateinitial.replaceAll('-', '/')} ao ${data.dateend.replaceAll('-', '/')}.`;
     } else {
-      preText = `Eu ${data.name} Número: ${data.numberct} Série: ${data.seriesct}, `
+      preText = `Eu ${data.name}, portador(a) do CPF nº ${data.cpf}, `
       + `servidor Público desta Municipalidade, exercendo a função de ${data.occupation}, `
       + 'em conformidade com a Lei Complementar nº 001/2006, Capítulo IV. Art 94, venho mui '
       + `respeitosamente requerer Licença Especial a Título Prêmio referente ao período aquisitivo ${data.vestingperiod} no `
       + `período de ${data.daysperiod} dias a contar do dia ${data.dateinitial.replaceAll('-', '/')} ao  ${data.dateend.replaceAll('-', '/')}.`;
     }
   } else {
-    preText = `Eu ${data.name} Número: ${data.numberct} Série: ${data.seriesct}, `
+    preText = `Eu ${data.name}, portador(a) do CPF nº ${data.cpf}, `
     + `servidor Público desta Municipalidade, exercendo a função de ${data.occupation}, `
     + 'em conformidade com a Lei Complementar nº 001/2006, Capítulo IV. Art 94, venho mui '
     + `respeitosamente requerer quitação das Férias referente ao período aquisitivo ${data.vestingperiod}.`;
