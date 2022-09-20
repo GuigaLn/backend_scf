@@ -21,7 +21,7 @@ class App {
   private middlewares(): void {
     this.app.use(express.json());
     this.app.use(cors());
-    this.app.use('/uploads', express.static(`${__dirname}/../uploads`));
+    // this.app.use('/uploads', express.static(`${__dirname}/../uploads`));
   }
 
   private database(): void {
