@@ -1,8 +1,8 @@
-import express from 'express';
 import cors from 'cors';
+import express from 'express';
 
 import routes from './routes/index';
-import { poolTickets, poolScp } from './utils/dbconfig';
+import { poolScp, poolTickets } from './utils/dbconfig';
 
 // eslint-disable-next-line no-array-constructor
 export const clients : Array<any> = new Array();
@@ -21,6 +21,7 @@ class App {
   private middlewares(): void {
     this.app.use(express.json());
     this.app.use(cors());
+    this.app.use('/uploads', express.static(`${__dirname}/../uploads`));
   }
 
   private database(): void {

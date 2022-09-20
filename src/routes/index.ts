@@ -13,6 +13,8 @@ import contactRouter from './contact.routes';
 import employeeRouter from './employee.routes';
 import occupationRouter from './occupation.routes';
 import overtimeRouter from './overtime.routes';
+import popsRouter from './pops.routes';
+import sectorRouter from './sector.routes';
 import syncRouter from './sync.routes';
 import timeRouter from './time.routes';
 import ubsRouter from './ubs.routes';
@@ -44,5 +46,7 @@ routes.use('/time', timeRouter);
 routes.use('/vacation', vacationRouter);
 routes.use('/overtime', overtimeRouter);
 routes.use('/sincronizar', syncRouter);
+routes.use('/pops', popsRouter);
+routes.use('/sector2', sectorRouter);
 
 export default routes;
