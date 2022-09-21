@@ -8,11 +8,10 @@ import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const popsRouter = Router();
 
-popsRouter.use(ensureAuthenticated);
-
-popsRouter.get('/', POPsController.index);
-popsRouter.post('/', multer(uploadConfig).single('file'), POPsController.store);
-popsRouter.put('/confirm', POPsController.confirm);
-popsRouter.put('/reject', POPsController.reject);
+popsRouter.get('/', ensureAuthenticated, POPsController.index);
+popsRouter.get('/public', POPsController.public);
+popsRouter.post('/', ensureAuthenticated, multer(uploadConfig).single('file'), POPsController.store);
+popsRouter.put('/confirm', ensureAuthenticated, POPsController.confirm);
+popsRouter.put('/reject', ensureAuthenticated, POPsController.reject);
 
 export default popsRouter;

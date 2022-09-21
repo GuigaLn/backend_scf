@@ -82,6 +82,28 @@ class POPsController {
       return res.status(400).send(error);
     }
   }
+
+  /* FUNÇÃO LISTAR POP APROVADOS - PERMISSÃO NECESSARIO NENHUMA */
+  public async public(req: Request, res: Response): Promise<Response> {
+    try {
+      const sql = `select p.id, p.titulo as title, p.arquivo as file, to_char(p."data" , 'DD/MM/YYYY') as date, s.nome as sector,
+      gp.login as genereted_by, fap.nome as autorized_by, p.canelado_por as canceled_by, p.cancelamento_motivo as cancellationreason
+      from pops p 
+      inner join setor s on s.id = p.id_setor 
+      inner join usuario_login gp on gp.id = p.gerado_por 
+      left join usuario_login ap on ap.id = p.autorizado_por
+      left join funcionario fap on fap.id = ap.id_funcionario
+      WHERE p.autorizado_por IS NOT NULL AND p.canelado_por IS NULL
+      ORDER BY s.nome, p.id`;
+
+      const { rows } = await poolScp.query(sql);
+      const returning = rows;
+
+      return res.send(returning);
+    } catch (error) {
+      return res.status(400).send(error);
+    }
+  }
 }
 
 export default new POPsController();
