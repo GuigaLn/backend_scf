@@ -7,14 +7,13 @@ class POPsController {
   /* FUNÇÃO LISTAR POP - PERMISSÃO NECESSARIO NENHUMA */
   public async index(req: Request, res: Response): Promise<Response> {
     try {
-      const sql = `select p.id, p.titulo as title, p.arquivo as file, to_char(p."data" , 'DD/MM/YYYY') as date, s.nome as sector,
-      gp.login as genereted_by, fap.nome as autorized_by, p.canelado_por as canceled_by, p.cancelamento_motivo as cancellationreason
-      from pops p 
-      inner join setor s on s.id = p.id_setor 
-      inner join usuario_login gp on gp.id = p.gerado_por 
-      left join usuario_login ap on ap.id = p.autorizado_por
-      left join funcionario fap on fap.id = ap.id_funcionario
-      ORDER BY p.canelado_por NULLS FIRST, p.autorizado_por NULLS FIRST`;
+      const sql = `select p.id, p.numero as number, p.titulo as title, to_char(p."data" , 'DD/MM/YYYY') as date,
+      fap.nome as autorized_by, p.cancelado_por as canceled_by, 
+       p.cancelamento_motivo as cancellationreason
+       from pops p 
+       left join usuario_login ap on ap.id = p.autorizado_por
+       left join funcionario fap on fap.id = ap.id_funcionario
+       ORDER BY p.cancelado_por NULLS FIRST, p.autorizado_por NULLS FIRST, p.numero`;
 
       const { rows } = await poolScp.query(sql);
       const returning = rows;
@@ -31,10 +30,79 @@ class POPsController {
       return res.status(403).json({ status: ' Not Permision ' });
     }
 
-    if (req.file && req.body.title && req.body.sector && req.body.title !== '') {
+    if (req.body.title && req.body.title !== '') {
       try {
-        const sql = 'INSERT INTO pops(titulo, arquivo, id_setor, gerado_por) VALUES($1, $2, $3, $4) returning id';
-        const returning = await poolScp.query(sql, [req.body.title, req.file.filename, Number(req.body.sector), req.user]);
+        const sql = `INSERT INTO pops(titulo, versao, numero, executante, area, objetivo, preparado_por, revisado_por, conteudo) 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id`;
+        const returning = await poolScp.query(sql, [
+          req.body.title,
+          req.body.version || '',
+          req.body.number || '',
+          req.body.performer || '',
+          req.body.zone || '',
+          req.body.objective || '',
+          req.body.madeBy || '',
+          req.body.reviewedBy || '',
+          req.body.content || '',
+        ]);
+
+        return res.json(returning);
+      } catch (error) {
+        return res.status(400).json(error);
+      }
+    }
+
+    return res.status(400).json({ status: '400', msg: 'Título ou Setor não localizado!' });
+  }
+
+  /* FUNÇÃO DETALHAR POP - PERMISSÃO NECESSARIO 8 */
+  public async detail(req: Request, res: Response): Promise<Response> {
+    if (!checkPermision(8, req.userPermissions)) {
+      return res.status(403).json({ status: ' Not Permision ' });
+    }
+
+    if (req.body.id) {
+      try {
+        const sql = `SELECT titulo as title, versao as version, numero as number, executante as performer, 
+        area as zone, objetivo as objective, preparado_por as madeBy, revisado_por as reviewedBy, conteudo as content
+        FROM pops WHERE id = $1`;
+        const returning = await poolScp.query(sql, [Number(req.body.id)]);
+
+        return res.json({ data: returning.rows[0] });
+      } catch (error) {
+        return res.status(400).json(error);
+      }
+    }
+
+    return res.status(400).json({ status: '400', msg: 'Título ou Setor não localizado!' });
+  }
+
+  /* FUNÇÃO GRAVAR POP - PERMISSÃO NECESSARIO 8 */
+  public async update(req: Request, res: Response): Promise<Response> {
+    if (!checkPermision(8, req.userPermissions)) {
+      return res.status(403).json({ status: ' Not Permision ' });
+    }
+
+    if (req.body.id && req.body.title && req.body.title !== '' && req.body.content && req.body.content !== '') {
+      try {
+        const sql = `UPDATE pops SET titulo = $1, versao = $2, numero = $3, executante = $4, area = $5, objetivo = $6, 
+        preparado_por = $7, revisado_por = $8, conteudo = $9, autorizado_por = $10, cancelado_por = $11, cancelamento_motivo = $12
+        WHERE id = $13`;
+        const returning = await poolScp.query(sql, [
+          req.body.title,
+          req.body.version || '',
+          req.body.number || '',
+          req.body.performer || '',
+          req.body.zone || '',
+          req.body.objective || '',
+          req.body.madeBy || '',
+          req.body.reviewedBy || '',
+          req.body.content || '',
+          null,
+          null,
+          null,
+          req.body.id,
+        ]);
 
         return res.json(returning);
       } catch (error) {
@@ -73,7 +141,7 @@ class POPsController {
     try {
       if (!req.body.id || req.body.id === undefined) { return res.status(400).json('ID Not Defined!'); }
 
-      const sql = 'UPDATE pops SET canelado_por = $1 WHERE id = $2 RETURNING id';
+      const sql = 'UPDATE pops SET cancelado_por = $1 WHERE id = $2 RETURNING id';
 
       const returning = await poolScp.query(sql, [req.user, req.body.id]);
 
