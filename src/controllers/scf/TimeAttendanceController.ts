@@ -50,7 +50,13 @@ class TimeAttendanceController {
       try {
         // insert into ponto (data, primeira_entrada, id_funcionario) values ('02/12/2021', '08:00:00', 1)
 
-        sql = 'SELECT p.id, f.nome, p.data, p.primeira_entrada, p.primeira_saida, p.segunda_entrada, p.segunda_saida, p.id_funcionario, p.id_obs FROM ponto p inner join funcionario f on f.id = p.id_funcionario WHERE data = $1 AND matricula = $2 limit 1';
+        sql = `
+          SELECT p.id, f.nome, p.data, p.primeira_entrada, p.primeira_saida, p.segunda_entrada, p.segunda_saida, 
+          p.id_funcionario, p.id_obs, p.terceira_entrada, p.terceira_saida, p.quarta_entrada, p.quarta_saida, p.quinta_entrada, 
+          p.quinta_saida, p.sexta_entrada, p.sexta_saida, p.setima_entrada, p.setima_saida, p.oitava_entrada, p.oitava_saida, 
+          p.nona_entrada, p.nona_saida, p.decima_entrada, p.decima_saida
+          FROM ponto p inner join funcionario f on f.id = p.id_funcionario WHERE data = $1 AND matricula = $2 limit 1;
+        `;
 
         const { rows } = await poolScp.query(sql, [moment().format('DD/MM/Y'), timeAttedance.registration]);
 
@@ -72,8 +78,73 @@ class TimeAttendanceController {
             sql = 'UPDATE ponto SET segunda_saida = $1 WHERE id = $2';
             await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
             return res.json({ statusCode: 200, name, msg: `2º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].terceira_entrada === null) {
+            sql = 'UPDATE ponto SET terceira_entrada = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `3º Entrada Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].terceira_saida === null) {
+            sql = 'UPDATE ponto SET terceira_saida = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `3º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].quarta_entrada === null) {
+            sql = 'UPDATE ponto SET quarta_entrada = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `4º Entrada Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].quarta_saida === null) {
+            sql = 'UPDATE ponto SET quarta_saida = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `4º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].quinta_entrada === null) {
+            sql = 'UPDATE ponto SET quinta_entrada = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `5º Entrada Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].quinta_saida === null) {
+            sql = 'UPDATE ponto SET quinta_saida = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `5º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].sexta_entrada === null) {
+            sql = 'UPDATE ponto SET sexta_entrada = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `6º Entrada Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].sexta_saida === null) {
+            sql = 'UPDATE ponto SET sexta_saida = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `6º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].setima_entrada === null) {
+            sql = 'UPDATE ponto SET setima_entrada = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `7º Entrada Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].setima_saida === null) {
+            sql = 'UPDATE ponto SET setima_saida = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `7º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].oitava_entrada === null) {
+            sql = 'UPDATE ponto SET oitava_entrada = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `8º Entrada Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].oitava_saida === null) {
+            sql = 'UPDATE ponto SET oitava_saida = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `8º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].nona_entrada === null) {
+            sql = 'UPDATE ponto SET nona_entrada = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `9º Entrada Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].nona_saida === null) {
+            sql = 'UPDATE ponto SET nona_saida = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `9º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].decima_entrada === null) {
+            sql = 'UPDATE ponto SET decima_entrada = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `10º Entrada Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
+          } else if (rows[0].decima_saida === null) {
+            sql = 'UPDATE ponto SET decima_saida = $1 WHERE id = $2';
+            await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
+            return res.json({ statusCode: 200, name, msg: `10º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
           }
-          return res.json({ statusCode: 500, name, msg: 'Já Foi Efetuado 4 Registros no Dia de Hoje!' });
+          
+          return res.json({ statusCode: 500, name, msg: 'Já foi efetuado 10 registros no dia de hoje!' });
         } else {
           sql = 'SELECT f.nome, f.id FROM funcionario f WHERE matricula = $1 limit 1';
 
