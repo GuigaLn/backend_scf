@@ -23,7 +23,16 @@ class TimeAttendanceController {
     }
 
     try {
-      let sql = "SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario, po.descricao as obs, po.id as idobs, p.validado as valided, p.horas as hours, f.carga_horaria as workload FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 AND (f.id_ubs = $4 OR 9 = $5) ORDER BY data asc";
+      let sql = `SELECT p.id, f.nome as name, to_char(p.data , 'DD-MM-YYYY') as day, p.primeira_entrada as one, 
+        p.primeira_saida as oneout, p.segunda_entrada as two, p.segunda_saida as twoout, p.id_funcionario,
+        po.descricao as obs, po.id as idobs, p.validado as valided, p.horas as hours, f.carga_horaria as workload,
+        p.primeira_entrada, p.primeira_saida, p.segunda_entrada, p.segunda_saida,
+        p.terceira_entrada, p.terceira_saida, p.quarta_entrada, p.quarta_saida, p.quinta_entrada, 
+        p.quinta_saida, p.sexta_entrada, p.sexta_saida, p.setima_entrada, p.setima_saida, p.oitava_entrada, p.oitava_saida, 
+        p.nona_entrada, p.nona_saida, p.decima_entrada, p.decima_saida 
+        FROM ponto p inner join funcionario f on f.id = p.id_funcionario inner join ponto_obs po on po.id = p.id_obs 
+        WHERE p.id_funcionario = $1 AND p.data >= $2 AND p.data <= $3 AND (f.id_ubs = $4 OR 9 = $5) ORDER BY data asc
+      `;
 
       const { rows } = await poolScp.query(sql, [req.body.id, startDay, endDay, req.idUbs, req.idUbs]);
 
