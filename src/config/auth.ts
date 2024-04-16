@@ -1,7 +1,8 @@
-const secretKey = 'ErgyDXZsP6Ht-Bz6qjKE4MIpL-sbJM6spAbMyf-kNN0JUjLKg3u';
+import { SECRET_KEY } from './config';
+
 export default {
   jwt: {
-    secret: secretKey,
+    secret: SECRET_KEY,
     expiresIn: '3d',
   },
 };
