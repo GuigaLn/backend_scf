@@ -3,6 +3,7 @@ import moment from 'moment';
 import { poolScp } from '../../utils/dbconfig';
 import { TimeAttendanceInterface } from '../../interfaces/scf/TimeAttendance';
 import { checkPermision } from '../../utils/checkPermision';
+import { TOKEN_PONTO } from '../../config/config';
 
 class TimeAttendanceController {
   /* FUNÇÃO PARA LISTAR BATIDAS - PERMISSÃO NECESSARIO 2 */
@@ -52,6 +53,12 @@ class TimeAttendanceController {
   /* FUNÇÃO USADA PARA BATER O PONTO - PERMISSÃO NECESSARIA - NENHUMA */
   public async store(req: Request, res: Response): Promise<Response> {
     const timeAttedance: TimeAttendanceInterface = req.body;
+    const { access_token: ACCESS_TOKEN } = req.headers;
+
+    if (ACCESS_TOKEN !== TOKEN_PONTO) {
+      return res.status(401).json({ statusCode: 401, msg: 'Token não fornecido!' });
+    }
+
     var sql;
     var name;
 
@@ -152,7 +159,7 @@ class TimeAttendanceController {
             await poolScp.query(sql, [moment().format('HH:mm:ss'), rows[0].id]);
             return res.json({ statusCode: 200, name, msg: `10º Saída Registrada com Sucesso! ${moment().format('HH:mm:ss')}` });
           }
-          
+
           return res.json({ statusCode: 500, name, msg: 'Já foi efetuado 10 registros no dia de hoje!' });
         } else {
           sql = 'SELECT f.nome, f.id FROM funcionario f WHERE matricula = $1 limit 1';
