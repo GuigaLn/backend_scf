@@ -4,5 +4,12 @@ export interface TicketInterface {
   prioritary: boolean
   attendance?: boolean
   sectorId: number
-  sectorName: string
+  sectorName: string;
+  token?: string;
+}
+
+export interface ConfigPrinter {
+  idSector: number | null,
+  nome: string | null,
+  ipPrinter: string | null,
 }
