@@ -3,4 +3,5 @@ export interface CallsInterface {
   ticketWindow: boolean
   number: string
   sectorId: number
+  mode: string
 }
